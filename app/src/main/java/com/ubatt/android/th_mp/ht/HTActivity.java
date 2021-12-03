@@ -54,6 +54,8 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.ubatt.android.th_mp.ConfigActivity;
+import com.ubatt.android.th_mp.R;
+import com.ubatt.android.th_mp.ht.settings.SettingsFragment;
 import com.ubatt.android.th_mp.profile.BleProfileService;
 import com.ubatt.android.th_mp.profile.BleProfileServiceReadyActivity;
 
@@ -68,9 +70,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-
-import com.ubatt.android.th_mp.R;
-import com.ubatt.android.th_mp.ht.settings.SettingsFragment;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -380,7 +379,7 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 		textByteArray[12] = (byte) 0xaf; textByteArray[13] = (byte) 0x08; textByteArray[14] = (byte) 0x00; textByteArray[15] = (byte) 0xfe;
 		textByteArray[16] = (byte) 0x05; textByteArray[17] = (byte) 0x00; textByteArray[18] = (byte) 0x00; textByteArray[19] = (byte) 0x00;
 		textByteArray[20] = (byte) 0x02; textByteArray[21] = (byte) 0x00; textByteArray[22] = (byte) 0x00; textByteArray[23] = (byte) 0x00;
-		textByteArray[24] = (byte) 0x07; textByteArray[25] = (byte) 0x08; textByteArray[26] = (byte) 0x09; textByteArray[27] = (byte) 0x10;
+		textByteArray[24] = (byte) 0x07; textByteArray[25] = (byte) 0x08; textByteArray[26] = (byte) 0x09; textByteArray[27] = (byte) 0x11;
 		return textByteArray;
 	}
 
