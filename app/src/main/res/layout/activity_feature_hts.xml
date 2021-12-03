@@ -1,0 +1,400 @@
+<!--
+  ~ Copyright (c) 2015, Nordic Semiconductor
+  ~ All rights reserved.
+  ~
+  ~ Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+  ~
+  ~ 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+  ~
+  ~ 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the
+  ~ documentation and/or other materials provided with the distribution.
+  ~
+  ~ 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this
+  ~ software without specific prior written permission.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+  ~ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+  ~ HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+  ~ LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+  ~ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+  ~ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	tools:context=".ht.HTActivity">
+
+	<include
+		android:id="@+id/toolbar_actionbar"
+		layout="@layout/toolbar" />
+
+	<com.ubatt.android.th_mp.widget.ForegroundRelativeLayout
+		style="@style/HeaderShadow"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content">
+
+		<!-- The size of text below must be fixed, therefore dp are used instead of sp -->
+
+		<ScrollView
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:layout_alignTop="@+id/chart_temp"
+			android:layout_marginTop="50dp">
+
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="vertical">
+
+				<TextView
+					android:id="@+id/Temp_text_ui"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_gravity="top"
+					android:background="@color/actionBarColor"
+					android:gravity="center"
+					android:text="Temperature"
+					android:textColor="#FFFFFF"
+					android:textSize="26sp" />
+
+				<com.github.mikephil.charting.charts.LineChart
+					android:id="@+id/chart_temp"
+					android:layout_width="match_parent"
+					android:layout_height="400dp"
+					android:layout_marginTop="0dp"
+					android:addStatesFromChildren="true"
+					android:gravity="center">
+
+				</com.github.mikephil.charting.charts.LineChart>
+
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="60dp"
+					android:orientation="horizontal">
+
+					<LinearLayout
+						android:layout_width="0dp"
+						android:layout_height="match_parent"
+						android:layout_weight="3"
+						android:orientation="vertical">
+
+						<TextView
+							android:id="@+id/text_temp_min"
+							android:layout_width="match_parent"
+							android:layout_height="0dp"
+							android:layout_weight="1"
+							android:gravity="center_vertical"
+							android:paddingLeft="10dp"
+							android:paddingTop="0dp"
+							android:text="Min : "
+							android:textSize="16sp" />
+
+						<TextView
+							android:id="@+id/text_temp_max"
+							android:layout_width="match_parent"
+							android:layout_height="0dp"
+							android:layout_weight="1"
+							android:gravity="center_vertical"
+							android:paddingLeft="10dp"
+							android:text="Max : "
+							android:textSize="16sp" />
+					</LinearLayout>
+
+					<LinearLayout
+						android:layout_width="0dp"
+						android:layout_height="match_parent"
+						android:layout_weight="5">
+
+						<androidx.appcompat.widget.AppCompatTextView
+							android:id="@+id/text_temp_value"
+							android:layout_width="0dp"
+							android:layout_height="match_parent"
+							android:layout_gravity="center|center_horizontal|center_vertical"
+							android:layout_marginTop="0dp"
+							android:layout_weight="2"
+							android:ellipsize="end"
+							android:freezesText="true"
+							android:gravity="right|center_horizontal"
+							android:maxLines="1"
+							android:text="@string/not_available_value"
+							android:textSize="40sp"
+							android:visibility="visible" />
+
+						<androidx.appcompat.widget.AppCompatTextView
+							android:id="@+id/text_temp_unit"
+							android:layout_width="0dp"
+							android:layout_height="match_parent"
+							android:layout_gravity="center_horizontal|center_vertical"
+							android:layout_weight="1"
+							android:gravity="center_vertical"
+							android:text="@string/hts_unit_celsius"
+							android:textSize="20sp" />
+
+					</LinearLayout>
+
+					<LinearLayout
+						android:layout_width="0dp"
+						android:layout_height="match_parent"
+						android:layout_weight="2"
+						android:orientation="vertical">
+
+						<androidx.appcompat.widget.AppCompatTextView
+							android:id="@+id/text_temp_count_ui"
+							android:layout_width="match_parent"
+							android:layout_height="0dp"
+							android:layout_gravity="center"
+							android:layout_marginRight="0dp"
+							android:layout_weight="1"
+							android:ellipsize="end"
+							android:freezesText="false"
+							android:gravity="bottom|center_horizontal"
+							android:maxLines="1"
+							android:text="Total Count"
+							android:textSize="12sp"
+							android:visibility="visible" />
+
+						<TextView
+							android:id="@+id/text_temp_count"
+							android:layout_width="match_parent"
+							android:layout_height="0dp"
+							android:layout_weight="1"
+							android:gravity="center_horizontal|top"
+							android:text="0" />
+					</LinearLayout>
+
+				</LinearLayout>
+
+				<TextView
+					android:id="@+id/Humi_text_ui"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_gravity="top"
+					android:layout_weight="1"
+					android:background="@color/actionBarColor"
+					android:gravity="center"
+					android:text="Humidity"
+					android:textColor="#FFFFFF"
+					android:textSize="26sp" />
+
+				<com.github.mikephil.charting.charts.LineChart
+					android:id="@+id/chart_humi"
+					android:layout_width="match_parent"
+					android:layout_height="400dp"
+					android:layout_marginTop="0dp"
+					android:addStatesFromChildren="true"
+					android:gravity="center" >
+
+				</com.github.mikephil.charting.charts.LineChart>
+
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="60dp"
+					android:orientation="horizontal">
+
+					<LinearLayout
+						android:layout_width="0dp"
+						android:layout_height="match_parent"
+						android:layout_weight="3"
+						android:orientation="vertical">
+
+						<TextView
+							android:id="@+id/text_humi_min"
+							android:layout_width="match_parent"
+							android:layout_height="0dp"
+							android:layout_weight="1"
+							android:gravity="center_vertical"
+							android:paddingLeft="10dp"
+							android:paddingTop="0dp"
+							android:text="Min : "
+							android:textSize="16sp" />
+
+						<TextView
+							android:id="@+id/text_humi_max"
+							android:layout_width="match_parent"
+							android:layout_height="0dp"
+							android:layout_weight="1"
+							android:gravity="center_vertical"
+							android:paddingLeft="10dp"
+							android:text="Max : "
+							android:textSize="16sp" />
+					</LinearLayout>
+
+					<LinearLayout
+						android:layout_width="0dp"
+						android:layout_height="match_parent"
+						android:layout_weight="5">
+
+						<androidx.appcompat.widget.AppCompatTextView
+							android:id="@+id/text_humi_value"
+							android:layout_width="0dp"
+							android:layout_height="match_parent"
+							android:layout_gravity="center|center_horizontal|center_vertical"
+							android:layout_marginTop="0dp"
+							android:layout_weight="2"
+							android:ellipsize="end"
+							android:freezesText="true"
+							android:gravity="right|center_horizontal"
+							android:maxLines="1"
+							android:text="@string/not_available_value"
+							android:textSize="40sp"
+							android:visibility="visible" />
+
+						<androidx.appcompat.widget.AppCompatTextView
+							android:id="@+id/text_humi_unit"
+							android:layout_width="0dp"
+							android:layout_height="match_parent"
+							android:layout_gravity="center_horizontal|center_vertical"
+							android:layout_weight="1"
+							android:gravity="center_vertical"
+							android:text="%"
+							android:textSize="20sp" />
+					</LinearLayout>
+
+					<LinearLayout
+						android:layout_width="0dp"
+						android:layout_height="match_parent"
+						android:layout_weight="2"
+						android:orientation="vertical">
+
+						<androidx.appcompat.widget.AppCompatTextView
+							android:id="@+id/text_humi_count_ui"
+							android:layout_width="match_parent"
+							android:layout_height="0dp"
+							android:layout_gravity="center"
+							android:layout_marginRight="0dp"
+							android:layout_weight="1"
+							android:ellipsize="end"
+							android:freezesText="false"
+							android:gravity="bottom|center_horizontal"
+							android:maxLines="1"
+							android:text="Total Count"
+							android:textSize="12sp"
+							android:visibility="visible" />
+
+						<TextView
+							android:id="@+id/text_humi_count"
+							android:layout_width="match_parent"
+							android:layout_height="0dp"
+							android:layout_weight="1"
+							android:gravity="center_horizontal|top"
+							android:text="0" />
+					</LinearLayout>
+
+				</LinearLayout>
+
+				<com.google.android.material.button.MaterialButton
+					android:id="@+id/upload_data"
+					style="@style/Widget.Connect"
+					android:layout_width="125dp"
+					android:layout_height="38dp"
+					android:layout_marginTop="0dp"
+					android:layout_marginRight="9dp"
+					android:layout_marginBottom="@dimen/activity_vertical_margin_bottom"
+					android:text="Upload Data"
+					android:textSize="10sp" />
+
+				<Button
+					android:id="@+id/config_button"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Config" />
+
+				<Button
+					android:id="@+id/download_button"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="DOWNLOAD" />
+
+				<Button
+					android:id="@+id/upload_button"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="UPLOAD" />
+
+			</LinearLayout>
+		</ScrollView>
+
+		<androidx.appcompat.widget.AppCompatTextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_centerVertical="true"
+			android:layout_marginLeft="@dimen/hts_feature_title_long_margin"
+			android:rotation="270"
+			android:text="@string/hts_feature_title_long"
+			android:textColor="@color/verticalTitleColor"
+			android:textSize="32dp"
+			android:textStyle="bold"
+			android:visibility="gone" />
+
+		<TextView
+			android:id="@+id/battery"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentLeft="true"
+			android:layout_marginLeft="6dp"
+			android:layout_marginTop="@dimen/feature_device_name_margin_top"
+			android:background="@drawable/battery"
+			android:freezesText="true"
+			android:gravity="center"
+			android:text="@string/not_available"
+			android:textColor="#FFFFFF"
+			android:textSize="12sp" />
+
+		<androidx.appcompat.widget.AppCompatTextView
+			android:id="@+id/device_name"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginLeft="10dp"
+			android:layout_marginTop="@dimen/feature_device_name_margin_top"
+			android:layout_toRightOf="@+id/battery"
+			android:ellipsize="end"
+			android:freezesText="true"
+			android:maxLines="1"
+			android:text="@string/hts_default_name"
+			android:textAllCaps="true"
+			android:textAppearance="?android:attr/textAppearanceLarge"
+			android:visibility="gone" />
+
+		<androidx.appcompat.widget.AppCompatEditText
+			android:id="@+id/edit_hts_value"
+			android:layout_width="300px"
+			android:layout_height="500px"
+			android:layout_centerInParent="true"
+			android:scrollbars="vertical"
+			android:scrollHorizontally="false"
+			android:selectAllOnFocus="false"
+			android:singleLine="false"
+			android:text="1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\12\13\15\n23\n321\n321\n2\n23\n321"
+			android:visibility="gone" />
+
+		<com.google.android.material.button.MaterialButton
+			android:id="@+id/action_connect"
+			style="@style/Widget.Connect"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentTop="true"
+			android:layout_alignParentBottom="false"
+			android:layout_centerHorizontal="true"
+			android:layout_marginBottom="@dimen/activity_vertical_margin_bottom"
+			android:onClick="onConnectClicked"
+			android:text="@string/action_connect"
+			android:textSize="12sp" />
+
+		<com.google.android.material.button.MaterialButton
+			android:id="@+id/action_reset"
+			style="@style/Widget.Connect"
+			android:layout_width="70dp"
+			android:layout_height="40dp"
+			android:layout_alignParentTop="true"
+			android:layout_alignParentRight="true"
+			android:layout_alignParentBottom="false"
+			android:layout_marginRight="5dp"
+			android:layout_marginBottom="@dimen/activity_vertical_margin_bottom"
+			android:text="Reset"
+			android:textSize="10sp" />
+
+	</com.ubatt.android.th_mp.widget.ForegroundRelativeLayout>
+
+</LinearLayout>

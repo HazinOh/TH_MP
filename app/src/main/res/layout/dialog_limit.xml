@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:textAlignment="viewEnd">
+
+    <LinearLayout
+        android:layout_width="300dp"
+        android:layout_height="250dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/text_limit_ui"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_gravity="top"
+            android:background="#00BCD4"
+            android:gravity="center"
+            android:shadowColor="#000000"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="0"
+            android:text="Set Temp / Humi Limits"
+            android:textColor="@color/actionBarMenuTextColor"
+            android:textColorHint="@color/backgroundColor"
+            android:textSize="20sp" />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:orientation="horizontal"
+            android:paddingTop="10dp">
+
+            <TextView
+                android:id="@+id/text_limittemp_min_menu"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
+                android:layout_weight=".5"
+                android:gravity="center"
+                android:text="Min : "
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/editText_limittemp_min"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight=".5"
+                android:ems="10"
+                android:gravity="right"
+                android:inputType="numberSigned|number"
+                android:text="0"
+                android:textDirection="rtl"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/text_limittemp_max_menu"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
+                android:layout_weight=".5"
+                android:gravity="center"
+                android:text="Max : "
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/editText_limittemp_max"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight=".5"
+                android:ems="10"
+                android:gravity="right"
+                android:inputType="numberSigned|number"
+                android:text="30"
+                android:textDirection="rtl"
+                android:textSize="20sp" />
+
+            <Spinner
+                android:id="@+id/spinner_tempunit"
+                style="@style/Widget.AppCompat.Light.Spinner.DropDown.ActionBar"
+                android:layout_width="70dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center_vertical"
+                android:spinnerMode="dialog" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:orientation="horizontal"
+            android:paddingBottom="10dp">
+
+            <TextView
+                android:id="@+id/text_limithumi_min_menu"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
+                android:layout_weight=".5"
+                android:gravity="center"
+                android:text="Min : "
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/editText_limithumi_min"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight=".5"
+                android:ems="10"
+                android:gravity="right"
+                android:inputType="number"
+                android:text="20"
+                android:textDirection="rtl"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/text_limithumi_max_menu"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
+                android:layout_weight=".5"
+                android:gravity="center"
+                android:text="Max : "
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/editText_limithumi_max"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight=".5"
+                android:ems="10"
+                android:gravity="right"
+                android:inputType="number"
+                android:text="60"
+                android:textDirection="rtl"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/text_humiunit_menu"
+                android:layout_width="70dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="0dp"
+                android:layout_weight="00"
+                android:gravity="center"
+                android:text="%"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/button_limit_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:text="CANCEL" />
+
+            <Button
+                android:id="@+id/button_limit_ok"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:text="OK" />
+        </LinearLayout>
+
+    </LinearLayout>
+</LinearLayout>
