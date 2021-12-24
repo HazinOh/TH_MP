@@ -7,7 +7,7 @@
     android:textAlignment="viewEnd">
 
     <LinearLayout
-        android:layout_width="300dp"
+        android:layout_width="350dp"
         android:layout_height="250dp"
         android:gravity="center"
         android:orientation="vertical"
@@ -56,9 +56,9 @@
                 android:layout_gravity="center_vertical"
                 android:layout_weight=".5"
                 android:ems="10"
-                android:gravity="right"
+                android:gravity="center"
                 android:inputType="number"
-                android:text="1"
+                android:text="3"
                 android:textDirection="rtl"
                 android:textSize="20sp" />
 
@@ -87,7 +87,7 @@
                 android:layout_marginStart="10dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="Save Period : "
+                android:text="Detect Period : "
                 android:textSize="16sp" />
 
             <EditText
@@ -97,9 +97,9 @@
                 android:layout_gravity="center_vertical"
                 android:layout_weight=".5"
                 android:ems="10"
-                android:gravity="right"
+                android:gravity="center"
                 android:inputType="number"
-                android:text="10"
+                android:text="1"
                 android:textDirection="rtl"
                 android:textSize="20sp" />
 

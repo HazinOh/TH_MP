@@ -38,14 +38,13 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import java.util.Calendar;
-
-import no.nordicsemi.android.log.Logger;
 import com.ubatt.android.th_mp.FeaturesActivity;
 import com.ubatt.android.th_mp.R;
 import com.ubatt.android.th_mp.ToolboxApplication;
 import com.ubatt.android.th_mp.profile.BleProfileService;
 import com.ubatt.android.th_mp.profile.LoggableBleManager;
+
+import no.nordicsemi.android.log.Logger;
 
 public class RSCService extends BleProfileService implements RSCManagerCallbacks {
     @SuppressWarnings("unused")
@@ -94,10 +93,6 @@ public class RSCService extends BleProfileService implements RSCManagerCallbacks
 
     private final LocalBinder binder = new RSCBinder();
 
-    @Override
-    public void onDateTimeReceived(BluetoothDevice device, Calendar calendar) {
-
-    }
 
     /**
      * This local binder is an interface for the bound activity to operate with the RSC sensor.

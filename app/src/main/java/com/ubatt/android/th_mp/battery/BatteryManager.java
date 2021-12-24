@@ -20,6 +20,7 @@ import no.nordicsemi.android.ble.common.callback.battery.BatteryLevelDataCallbac
 import no.nordicsemi.android.ble.data.Data;
 import no.nordicsemi.android.log.LogContract;
 
+
 /**
  * The Ble Manager with Battery Service support.
  *
@@ -31,7 +32,7 @@ public abstract class BatteryManager<T extends BatteryManagerCallbacks> extends 
 	private final static UUID BATTERY_SERVICE_UUID = UUID.fromString("0000180F-0000-1000-8000-00805f9b34fb");
 
 	/** Battery Level characteristic UUID. */
-	private final static UUID BATTERY_LEVEL_CHARACTERISTIC_UUID = UUID.fromString("00002a19-0000-1000-8000-00805f9b34fb");
+	private final static UUID BATTERY_LEVEL_CHARACTERISTIC_UUID = UUID.fromString("00002A19-0000-1000-8000-00805f9b34fb");
 
 	private BluetoothGattCharacteristic batteryLevelCharacteristic;
 	/** Last received Battery Level value. */
@@ -66,7 +67,7 @@ public abstract class BatteryManager<T extends BatteryManagerCallbacks> extends 
 		if (isConnected()) {
 			readCharacteristic(batteryLevelCharacteristic)
 					.with(batteryLevelDataCallback)
-					.fail((device, status) -> log(Log.WARN,"Battery Level characteristic not found 2 / status : "+ status))
+					.fail((device, status) -> log(Log.WARN,"skinny_oym : Battery Level characteristic not found 2 / status : "+ status))
 					.enqueue();
 		}
 	}
@@ -77,8 +78,8 @@ public abstract class BatteryManager<T extends BatteryManagerCallbacks> extends 
 			setNotificationCallback(batteryLevelCharacteristic)
 					.with(batteryLevelDataCallback);
 			enableNotifications(batteryLevelCharacteristic)
-					.done(device -> log(Log.INFO, "Battery Level notifications enabled"))
-					.fail((device, status) -> log(Log.WARN, "Battery Level characteristic not found 1 / status : " + status))
+					.done(device -> log(Log.INFO, "skinny_oym : Battery Level notifications enabled"))
+					.fail((device, status) -> log(Log.WARN, "skinny_oym : Battery Level characteristic not found 1 / status : " + status))
 					.enqueue();
 		}
 	}
@@ -107,12 +108,16 @@ public abstract class BatteryManager<T extends BatteryManagerCallbacks> extends 
 
 		@Override
 		protected void initialize() {
+
 			readBatteryLevelCharacteristic();
 			enableBatteryLevelCharacteristicNotifications();
 		}
 
 		@Override
 		protected boolean isOptionalServiceSupported(@NonNull final BluetoothGatt gatt) {
+
+
+
 			final BluetoothGattService service = gatt.getService(BATTERY_SERVICE_UUID);
 			if (service != null) {
 				batteryLevelCharacteristic = service.getCharacteristic(BATTERY_LEVEL_CHARACTERISTIC_UUID);

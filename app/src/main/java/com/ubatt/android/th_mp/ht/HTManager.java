@@ -34,9 +34,9 @@ import androidx.annotation.Nullable;
 import com.ubatt.android.th_mp.battery.BatteryManager;
 import com.ubatt.android.th_mp.parser.TemperatureMeasurementParser;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 import no.nordicsemi.android.ble.callback.DataReceivedCallback;
@@ -60,21 +60,33 @@ public class HTManager extends BatteryManager<HTManagerCallbacks> {
 	final static UUID HT_SERVICE_UUID = UUID.fromString("00001809-0000-1000-8000-00805f9b34fb");
 	final static UUID CURRENT_TIME_SERVICE_UUID = UUID.fromString("00001805-0000-1000-8000-00805f9b34fb");
 	final static UUID DEVICE_INFORMATION_SERVICE_UUID = UUID.fromString("0000180a-0000-1000-8000-00805f9b34fb");
+	private final static UUID BATTERY_SERVICE_UUID = UUID.fromString("0000180F-0000-1000-8000-00805f9b34fb");
 
 	/** Health Thermometer Measurement characteristic UUID */
 	private static final UUID HT_MEASUREMENT_CHARACTERISTIC_UUID = UUID.fromString("00002A1C-0000-1000-8000-00805f9b34fb");
 	private static final UUID TEMPERATURE_TYPE_CHARACTERISTIC_UUID = UUID.fromString("00002A1D-0000-1000-8000-00805f9b34fb");
 	private static final UUID CURRENT_TIME_CHARACTERISTIC_UUID = UUID.fromString("00002a08-0000-1000-8000-00805f9b34fb");
 	private static final UUID DIS_OTS_CHARACTERISTIC_UUID = UUID.fromString("00002a29-0000-1000-8000-00805f9b34fb");
+	private final static UUID BATTERY_LEVEL_CHARACTERISTIC_UUID = UUID.fromString("00002A19-0000-1000-8000-00805f9b34fb");
 
 	private BluetoothGattCharacteristic htCharacteristic;
 	private BluetoothGattCharacteristic temperatureTypeCharacteristic;
 	private BluetoothGattCharacteristic currentTimeCharacteristic;
 	private BluetoothGattCharacteristic OTSCharacteristic;
 
-	HTManager(final Context context) {
+	byte[] stop = {0,};
+
+
+		HTManager(final Context context) {
 		super(context);
 	}
+
+	@NonNull
+	@Override
+	protected BatteryManagerGattCallback getGattCallback() {
+		return new HTManagerGattCallback();
+	}
+
 
 
 	public void readDateTime() {
@@ -89,34 +101,66 @@ public class HTManager extends BatteryManager<HTManagerCallbacks> {
 				.with(OTSCallback)
 				.fail((device, status) -> log(Log.WARN,"OYM :  Device Information OTS characteristic not found / status = " + status))
 				.enqueue();
-		byte[] stop = new byte[1];
-		stop[0] = 0x00;
-		writeCharacteristic(temperatureTypeCharacteristic, stop)
+
+
+		writeCharacteristic(temperatureTypeCharacteristic, stop )
 				.with((device, data) -> log(LogContract.Log.Level.APPLICATION,
-						"\"" + data.getStringValue(0) + "\" OYM : Measure Stop"))
+						"\"" + data.toString() + "\" OYM : Measure Stop"))
 				.enqueue();
 	}
 
-	public void configUpload(byte[] configByteArray) {
 
-		Log.d("Skinny", "OYM : config upload data = " + configByteArray);
 
-		writeCharacteristic(OTSCharacteristic, configByteArray)
+	public void configUpload(byte[] configByteArray, byte[] modeByte) {
+
+		switch (modeByte[0]) {
+			case 0x00:
+				readCharacteristic(OTSCharacteristic)
+						.with(OTSCallback)
+						.fail((device, status) -> log(Log.WARN,"OYM :  Device Information OTS characteristic not found / status = " + status))
+						.enqueue();
+				break;
+			case 0x01:
+				Log.d("Skinny", "OYM : config upload data = " + configByteArray);
+
+				writeCharacteristic(OTSCharacteristic, configByteArray)
+						.with((device, data) -> log(LogContract.Log.Level.APPLICATION,
+								"\"" + data.toString() + "\" OTS sent OYM"))
+						.enqueue();
+				readCharacteristic(OTSCharacteristic)
+						.with(OTSCallback)
+						.fail((device, status) -> log(Log.WARN,"OYM :  Device Information OTS characteristic not found / status = " + status))
+						.enqueue();
+				break;
+			case 0x02:
+				// DO NOTHING ONLY SEND MODE BYTE
+				break;
+			case 0x03:
+				// DO NOTHING ONLY SEND MODE BYTE
+				break;
+			case 0x04:
+				// DO NOTHING ONLY SEND MODE BYTE
+				break;
+			case 0x05:
+				// DO NOTHING ONLY SEND MODE BYTE
+				break;
+			case 0x06:
+				// DO NOTHING ONLY SEND MODE BYTE
+				break;
+			case 0x07:
+				// DO NOTHING ONLY SEND MODE BYTE
+				break;
+			default:
+				break;
+		}
+		writeCharacteristic(temperatureTypeCharacteristic, stop)
 				.with((device, data) -> log(LogContract.Log.Level.APPLICATION,
-						"\"" + data.getStringValue(0) + "\" OTS sent OYM"))
+						"\"" + data.toString() + "\" skinny_OYM - Mode selected : " + data ))
 				.enqueue();
-		readCharacteristic(OTSCharacteristic)
-				.with(OTSCallback)
-				.fail((device, status) -> log(Log.WARN,"OYM :  Device Information OTS characteristic not found / status = " + status))
-				.enqueue();
-
-
-
-		byte[] start = new byte[1];
-		start[0] = 0x01;
-		writeCharacteristic(temperatureTypeCharacteristic, start)
+		sleep(100);
+		writeCharacteristic(temperatureTypeCharacteristic, modeByte)
 				.with((device, data) -> log(LogContract.Log.Level.APPLICATION,
-						"\"" + data.getStringValue(0) + "\" OYM : Measure Start"))
+						"\"" + data.toString() + "\" skinny_OYM - Mode selected : " + data ))
 				.enqueue();
 	}
 
@@ -126,7 +170,10 @@ public class HTManager extends BatteryManager<HTManagerCallbacks> {
 	private DataReceivedCallback THDDateTimeCallback = new THDDateTimeDataCallback() {
 		@Override
 		public void onTHDDateTimeReceived(@NonNull BluetoothDevice device, Calendar calendar) {
-			Log.d("Skinny", "THD Date Time received: " + String.format(Locale.US, "%1$te %1$tb %1$tY, %1$tH:%1$tM:%1$tS", calendar));
+			SimpleDateFormat dateFormat = new SimpleDateFormat(
+					"yyyy-MM-dd HH:mm:ss");
+			String datetime = dateFormat.format(calendar.getInstance().getTime());
+//			Log.v("OYM", "THD Date Time received: " + datetime);
 			mCallbacks.onTHDDateTimeReceived(device,calendar);
 		}
 	};
@@ -134,15 +181,11 @@ public class HTManager extends BatteryManager<HTManagerCallbacks> {
 	private DataReceivedCallback OTSCallback = new OTSDataCallback() {
 		@Override
 		public void onOTSReceived(@NonNull BluetoothDevice device, Data data) {
-			Log.d("Skinny OYM" , "OTS data : " + data.toString());
+			Log.d("skinny_OYM" , "OTS read data : " + data.toString());
 		}
 	};
 
-	@NonNull
-	@Override
-	protected BatteryManagerGattCallback getGattCallback() {
-		return new HTManagerGattCallback();
-	}
+
 
 	/**
 	 * BluetoothGatt callbacks for connection/disconnection, service discovery,
@@ -154,12 +197,14 @@ public class HTManager extends BatteryManager<HTManagerCallbacks> {
 			super.initialize();
 
 
+
 			setIndicationCallback(htCharacteristic)
 					.with(new TemperatureMeasurementDataCallback() {
 						@Override
 						public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
 							log(LogContract.Log.Level.APPLICATION, "\"" + TemperatureMeasurementParser.parse(data) + "\" received");
 							super.onDataReceived(device, data);
+							Log.d("skinny_oym", "receive data : "+ data.toString() );
 						}
 
 						@Override
@@ -173,22 +218,29 @@ public class HTManager extends BatteryManager<HTManagerCallbacks> {
 					});
 			enableIndications(htCharacteristic).enqueue();
 
+			readCharacteristic(OTSCharacteristic)
+					.with(OTSCallback)
+					.done(device -> log(Log.INFO, "skinny_oym : OTS Read"))
+					.fail((device, status) -> log(Log.WARN,"OYM :  Device Information OTS characteristic not found / status = " + status))
+					.enqueue();
 
 
-			Calendar calendar = Calendar.getInstance();
+			Calendar cal = Calendar.getInstance();
 			byte[] textByteArray = new byte[7];
-			textByteArray[0] = (byte) (calendar.get(Calendar.YEAR) & 0xff);
-			textByteArray[1] = (byte) ((calendar.get(Calendar.YEAR)>>8) & 0xff);
-			textByteArray[2] = (byte) (calendar.get(Calendar.MONTH)+1);
-			textByteArray[3] = (byte) calendar.get(Calendar.DATE);
-			textByteArray[4] = (byte) calendar.get(Calendar.HOUR_OF_DAY);
-			textByteArray[5] = (byte) calendar.get(Calendar.MINUTE);
-			textByteArray[6] = (byte) calendar.get(Calendar.SECOND);
+			textByteArray[0] = (byte) (cal.get(Calendar.YEAR) & 0xff);
+			textByteArray[1] = (byte) ((cal.get(Calendar.YEAR)>>8) & 0xff);
+			textByteArray[2] = (byte) (cal.get(Calendar.MONTH)+1);
+			textByteArray[3] = (byte) cal.get(Calendar.DATE);
+			textByteArray[4] = (byte) cal.get(Calendar.HOUR_OF_DAY);
+			textByteArray[5] = (byte) cal.get(Calendar.MINUTE);
+			textByteArray[6] = (byte) cal.get(Calendar.SECOND);
 
 			writeCharacteristic(currentTimeCharacteristic, textByteArray)
 					.with((device, data) -> log(LogContract.Log.Level.APPLICATION,
-							"\"" + data.getStringValue(0) + "\" DTS sent OYM"))
+							"\"" + data.toString() + "\" DTS sent OYM"))
 			.enqueue();
+			readBatteryLevelCharacteristic();
+			enableBatteryLevelCharacteristicNotifications();
 
 
 		}
@@ -200,37 +252,26 @@ public class HTManager extends BatteryManager<HTManagerCallbacks> {
 			final BluetoothGattService DT_service = service_list.get(6);
 			List<BluetoothGattCharacteristic> DT_characteristic = DT_service.getCharacteristics();
 
+			final BluetoothGattService DI_service = service_list.get(5);
+			List<BluetoothGattCharacteristic> DI_characteristic = DI_service.getCharacteristics();
+
 			int permissions = DT_characteristic.get(0).getPermissions();
 			int properties = DT_characteristic.get(0).getProperties();
 
-
-
-			Log.d("Skinny","OYM / CTS DT permission = " + permissions + " / properties = " +properties);
+			Log.d("skinny_OYM"," CTS DT permission = " + permissions + " / properties = " +properties);
 
 			if (service != null) {
 				htCharacteristic = service.getCharacteristic(HT_MEASUREMENT_CHARACTERISTIC_UUID);
 				temperatureTypeCharacteristic = service.getCharacteristic(TEMPERATURE_TYPE_CHARACTERISTIC_UUID);
 				DT_characteristic.get(0).setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
 				currentTimeCharacteristic = DT_characteristic.get(0);
+				OTSCharacteristic = DI_characteristic.get(0);
+				Log.d("skinny_OYM"," Characteristic list = " + DI_characteristic.get(0).getUuid().toString() );
+				Log.d("skinny_OYM"," OTS setting");
 				}
 			return htCharacteristic != null;
 		}
 
-		@Override
-		protected boolean isOptionalServiceSupported(@NonNull final BluetoothGatt gatt) {
-
-			List<BluetoothGattService> service_list = gatt.getServices();
-			final BluetoothGattService DI_service = service_list.get(5);
-			List<BluetoothGattCharacteristic> DI_characteristic = DI_service.getCharacteristics();
-
-			int properties = DI_characteristic.get(0).getProperties();
-			if ( DI_service != null ) {
-				OTSCharacteristic = DI_characteristic.get(0);
-				Log.d("Skinny","OYM / Characteristic list = " + DI_characteristic.get(0).getUuid().toString() + " / properties = " +properties);
-				Log.d("Skinny","OYM / OTS setting");
-			}
-			return OTSCharacteristic != null;
-		}
 
 		@Override
 		protected void onDeviceDisconnected() {

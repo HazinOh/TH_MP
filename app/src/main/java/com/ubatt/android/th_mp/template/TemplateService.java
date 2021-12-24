@@ -36,15 +36,13 @@ import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.ubatt.android.th_mp.profile.BleProfileService;
-import com.ubatt.android.th_mp.profile.LoggableBleManager;
-
-import java.util.Calendar;
-
-import no.nordicsemi.android.log.Logger;
 import com.ubatt.android.th_mp.FeaturesActivity;
 import com.ubatt.android.th_mp.R;
 import com.ubatt.android.th_mp.ToolboxApplication;
+import com.ubatt.android.th_mp.profile.BleProfileService;
+import com.ubatt.android.th_mp.profile.LoggableBleManager;
+
+import no.nordicsemi.android.log.Logger;
 
 public class TemplateService extends BleProfileService implements TemplateManagerCallbacks {
     public static final String BROADCAST_TEMPLATE_MEASUREMENT = "com.ubatt.android.th_mp.template.BROADCAST_MEASUREMENT";
@@ -63,10 +61,6 @@ public class TemplateService extends BleProfileService implements TemplateManage
 
     private final LocalBinder binder = new TemplateBinder();
 
-    @Override
-    public void onDateTimeReceived(BluetoothDevice device, Calendar calendar) {
-
-    }
 
     /**
      * This local binder is an interface for the bound activity to operate with the sensor.

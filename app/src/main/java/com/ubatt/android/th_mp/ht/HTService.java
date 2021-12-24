@@ -39,10 +39,12 @@ import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.ubatt.android.th_mp.FeaturesActivity;
+import com.ubatt.android.th_mp.R;
 import com.ubatt.android.th_mp.ToolboxApplication;
 import com.ubatt.android.th_mp.profile.BleProfileService;
 import com.ubatt.android.th_mp.profile.LoggableBleManager;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -50,7 +52,6 @@ import no.nordicsemi.android.ble.common.profile.ht.TemperatureMeasurementCallbac
 import no.nordicsemi.android.ble.common.profile.ht.TemperatureType;
 import no.nordicsemi.android.ble.common.profile.ht.TemperatureUnit;
 import no.nordicsemi.android.log.Logger;
-import com.ubatt.android.th_mp.R;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class HTService extends BleProfileService implements HTManagerCallbacks {
@@ -58,8 +59,8 @@ public class HTService extends BleProfileService implements HTManagerCallbacks {
 	public static final String EXTRA_TEMPERATURE = "com.ubatt.android.th_mp.hts.EXTRA_TEMPERATURE";
 	public static final String EXTRA_DEVICE_NAME = "com.ubatt.android.th_mp.EXTRA_DEVICE_NAME";
 
-	public static final String BROADCAST_TEST_DOWNLOAD_BUTTON = "com.ubatt.android.TH.TEST_DOWNLOAD_BUTTON";
-	public static final String BROADCAST_TEST_UPLOAD_BUTTON = "com.ubatt.android.TH.TEST_UPLOAD_BUTTON";
+	public static final String BROADCAST_THD_STANDBY_BUTTON = "com.ubatt.android.THD.STANDBY_BUTTON";
+	public static final String BROADCAST_THD_LIVE_BUTTON = "com.ubatt.android.THD.LIVE_BUTTON";
 
 	public static final String BROADCAST_THD_DATETIME = "com.ubatt.android.TH.DATETIME";
 	public static final String EXTRA_DATETIME = "com.ubatt.android.TH.EXTRA_DATETIME";
@@ -76,16 +77,13 @@ public class HTService extends BleProfileService implements HTManagerCallbacks {
 	/** The last received temperature value in Celsius degrees. */
 	private Float temp;
 	private int type;
+	private String datetime;
 
 	@SuppressWarnings("unused")
 	private HTManager manager;
 
 	private final LocalBinder minder = new HTSBinder();
 
-	@Override
-	public void onDateTimeReceived(BluetoothDevice device, Calendar calendar) {
-
-	}
 
 
 	/**
@@ -102,6 +100,9 @@ public class HTService extends BleProfileService implements HTManagerCallbacks {
 		}
 		int getType() {
 			return type;
+		}
+		String getDatetime() {
+			return datetime;
 		}
 	}
 
@@ -130,7 +131,7 @@ public class HTService extends BleProfileService implements HTManagerCallbacks {
 		// when user has disconnected from the sensor, we have to cancel the notification that we've created some milliseconds before using unbindService
 		cancelNotification();
 		unregisterReceiver(disconnectActionBroadcastReceiver);
-
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
 		super.onDestroy();
 	}
 
@@ -157,8 +158,18 @@ public class HTService extends BleProfileService implements HTManagerCallbacks {
 												 @Nullable @TemperatureType final Integer type) {
 		temp = TemperatureMeasurementCallback.toCelsius(temperature, unit);
 
+		SimpleDateFormat dateFormat = new SimpleDateFormat(
+				"yyyy-MM-dd HH:mm:ss");
+		final String calenderString = String.format(Locale.US, "%1$te %1$tb %1$tY, %1$tH:%1$tM:%1$tS", calendar);
+		//Log.d("Skinny", "Date Time received test 1: " + calenderString );
+		final String datetime = dateFormat.format(calendar.getTime());
+
+
+
 		final Intent broadcast = new Intent(BROADCAST_HTS_MEASUREMENT);
 		broadcast.putExtra(EXTRA_DEVICE, getBluetoothDevice());
+		broadcast.putExtra("mac_address", getBluetoothDevice().getAddress());
+		broadcast.putExtra("THD_datetime",datetime);
 		broadcast.putExtra(EXTRA_DEVICE_NAME, getBluetoothDevice().getName());
 		broadcast.putExtra(EXTRA_TEMPERATURE, temp);
 		broadcast.putExtra("type", type);
@@ -194,11 +205,12 @@ public class HTService extends BleProfileService implements HTManagerCallbacks {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			final String action = intent.getAction();
-			if (BROADCAST_TEST_DOWNLOAD_BUTTON.equals(action)) {
+			if (BROADCAST_THD_STANDBY_BUTTON.equals(action)) {
 				manager.readDateTime();
-			} else if (BROADCAST_TEST_UPLOAD_BUTTON.equals(action)) {
+			} else if (BROADCAST_THD_LIVE_BUTTON.equals(action)) {
 				final byte[] configByteArray = intent.getByteArrayExtra("configByteArray");
-				manager.configUpload(configByteArray);
+				final byte[] modeByte = intent.getByteArrayExtra("MODE_SELECT");
+				manager.configUpload(configByteArray,modeByte);
 			}
 
 		}
@@ -207,8 +219,8 @@ public class HTService extends BleProfileService implements HTManagerCallbacks {
 
 	private static IntentFilter THDDateTimeIntentFilter() {
 		final IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction(BROADCAST_TEST_DOWNLOAD_BUTTON);
-		intentFilter.addAction(BROADCAST_TEST_UPLOAD_BUTTON);
+		intentFilter.addAction(BROADCAST_THD_STANDBY_BUTTON);
+		intentFilter.addAction(BROADCAST_THD_LIVE_BUTTON);
 		return intentFilter;
 	}
 

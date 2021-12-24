@@ -175,9 +175,5 @@ public class BPMActivity extends BleProfileActivity implements BPMManagerCallbac
 	public void onBatteryLevelChanged(@NonNull final BluetoothDevice device, final int batteryLevel) {
 		runOnUiThread(() -> batteryLevelView.setText(getString(R.string.battery, batteryLevel)));
 	}
-
-	@Override
-	public void onDateTimeReceived(BluetoothDevice device, Calendar calendar) {
-
-	}
 }
+

@@ -44,19 +44,18 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.ubatt.android.th_mp.FeaturesActivity;
+import com.ubatt.android.th_mp.R;
+import com.ubatt.android.th_mp.ToolboxApplication;
 import com.ubatt.android.th_mp.profile.LoggableBleManager;
 import com.ubatt.android.th_mp.profile.multiconnect.BleMulticonnectProfileService;
 
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
 import no.nordicsemi.android.ble.observer.ServerObserver;
 import no.nordicsemi.android.log.LogContract;
-import com.ubatt.android.th_mp.FeaturesActivity;
-import com.ubatt.android.th_mp.R;
-import com.ubatt.android.th_mp.ToolboxApplication;
 
 public class ProximityService extends BleMulticonnectProfileService implements ProximityManagerCallbacks, ServerObserver {
     @SuppressWarnings("unused")
@@ -89,10 +88,6 @@ public class ProximityService extends BleMulticonnectProfileService implements P
      */
     private List<BluetoothDevice> devicesWithAlarm;
 
-    @Override
-    public void onDateTimeReceived(BluetoothDevice device, Calendar calendar) {
-
-    }
 
     /**
      * This local binder is an interface for the bonded activity to operate with the proximity

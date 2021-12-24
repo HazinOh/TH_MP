@@ -35,16 +35,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.ubatt.android.th_mp.FeaturesActivity;
+import com.ubatt.android.th_mp.R;
 import com.ubatt.android.th_mp.profile.BleProfileActivity;
 import com.ubatt.android.th_mp.profile.LoggableBleManager;
 
 import org.achartengine.GraphicalView;
 
-import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
-
-import com.ubatt.android.th_mp.R;
 
 /**
  * HRSActivity is the main Heart rate activity. It implements HRSManagerCallbacks to receive callbacks from HRSManager class. The activity supports portrait and landscape orientations. The activity
@@ -251,8 +249,4 @@ public class HRActivity extends BleProfileActivity implements HRManagerCallbacks
 		hrValue = 0;
 	}
 
-	@Override
-	public void onDateTimeReceived(BluetoothDevice device, Calendar calendar) {
-
-	}
 }

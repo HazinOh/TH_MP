@@ -16,14 +16,12 @@ import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.ubatt.android.th_mp.FeaturesActivity;
+import com.ubatt.android.th_mp.R;
 import com.ubatt.android.th_mp.ToolboxApplication;
 import com.ubatt.android.th_mp.profile.BleProfileService;
 import com.ubatt.android.th_mp.profile.LoggableBleManager;
 
-import java.util.Calendar;
-
 import no.nordicsemi.android.log.Logger;
-import com.ubatt.android.th_mp.R;
 
 public class CGMService extends BleProfileService implements CGMManagerCallbacks {
     private static final String ACTION_DISCONNECT = "com.ubatt.android.th_mp.cgms.ACTION_DISCONNECT";
@@ -49,10 +47,6 @@ public class CGMService extends BleProfileService implements CGMManagerCallbacks
     private CGMManager manager;
     private final LocalBinder binder = new CGMSBinder();
 
-    @Override
-    public void onDateTimeReceived(BluetoothDevice device, Calendar calendar) {
-
-    }
 
     /**
      * This local binder is an interface for the bonded activity to operate with the RSC sensor

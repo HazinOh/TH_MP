@@ -7,7 +7,7 @@
     android:textAlignment="viewEnd">
 
     <LinearLayout
-        android:layout_width="300dp"
+        android:layout_width="350dp"
         android:layout_height="250dp"
         android:gravity="center"
         android:orientation="vertical"
@@ -51,10 +51,11 @@
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:ems="10"
-                android:gravity="right"
-                android:inputType="number"
-                android:text="10"
-                android:textDirection="rtl"
+                android:gravity="center_horizontal|center_vertical"
+                android:inputType="numberDecimal"
+                android:maxLength="3"
+                android:text="0"
+                android:textDirection="ltr"
                 android:textSize="20sp" />
 
             <Spinner

@@ -33,12 +33,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
-import java.util.Calendar;
-import java.util.UUID;
-
 import com.ubatt.android.th_mp.R;
 import com.ubatt.android.th_mp.profile.BleProfileExpandableListActivity;
 import com.ubatt.android.th_mp.profile.LoggableBleManager;
+
+import java.util.UUID;
 
 // TODO The GlucoseActivity should be rewritten to use the service approach, like other do.
 public class GlucoseActivity extends BleProfileExpandableListActivity implements PopupMenu.OnMenuItemClickListener, GlucoseManagerCallbacks {
@@ -204,8 +203,4 @@ public class GlucoseActivity extends BleProfileExpandableListActivity implements
 		runOnUiThread(() -> batteryLevelView.setText(getString(R.string.battery, batteryLevel)));
 	}
 
-	@Override
-	public void onDateTimeReceived(BluetoothDevice device, Calendar calendar) {
-
-	}
 }

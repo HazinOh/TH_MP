@@ -37,14 +37,12 @@ import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.ubatt.android.th_mp.FeaturesActivity;
+import com.ubatt.android.th_mp.R;
 import com.ubatt.android.th_mp.ToolboxApplication;
 import com.ubatt.android.th_mp.profile.BleProfileService;
 import com.ubatt.android.th_mp.profile.LoggableBleManager;
 
-import java.util.Calendar;
-
 import no.nordicsemi.android.log.Logger;
-import com.ubatt.android.th_mp.R;
 
 public class CSCService extends BleProfileService implements CSCManagerCallbacks {
     @SuppressWarnings("unused")
@@ -80,10 +78,6 @@ public class CSCService extends BleProfileService implements CSCManagerCallbacks
     private final LocalBinder binder = new CSCBinder();
     private CSCManager manager;
 
-    @Override
-    public void onDateTimeReceived(BluetoothDevice device, Calendar calendar) {
-
-    }
 
     /**
      * This local binder is an interface for the bonded activity to operate with the RSC sensor

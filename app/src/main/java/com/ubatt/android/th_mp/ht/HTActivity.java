@@ -22,6 +22,7 @@
 package com.ubatt.android.th_mp.ht;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -29,6 +30,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -59,13 +62,8 @@ import com.ubatt.android.th_mp.ht.settings.SettingsFragment;
 import com.ubatt.android.th_mp.profile.BleProfileService;
 import com.ubatt.android.th_mp.profile.BleProfileServiceReadyActivity;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -103,13 +101,26 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 	private TextView humiMinView;
 	private TextView humiMaxView;
 
+	private Button menu00Button;
+	private Button menu01Button;
+	private Button menu02Button;
+	private Button menu03Button;
+	private Button menu04Button;
+	private Button menu05Button;
+	private Button menu06Button;
+	private Button menu07Button;
+
+	private byte[] modeByte;
+
+	private Dialog menuDialog;
+
 	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private float temp_startIndex;
 	private float humi_startIndex;
 	private float temp_avrg;
-	private float temp_minmax;
-	private float humi_avrg;
+	private float temp_minmax = 30;
+	private float humi_avrg = 30;
 	private float humi_minmax;
 
 	private boolean pause = false;
@@ -118,88 +129,61 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 	List<Entry> humi_entries = new ArrayList<Entry>();
 	List<String> dates = new ArrayList<String>();
 
+	THDBHelper thdbHelper = null;
+
+	public static Context context_main;
+
 	@RequiresApi(api = Build.VERSION_CODES.N)
 	@Override
 	protected void onCreateView(final Bundle savedInstanceState) {
 		setContentView(R.layout.activity_feature_hts);
 		setGUI();
+		init_tables();
+		save_init_value();
 
+		context_main = this;
 		/*
 		startIndex = 0;
 		final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(HTActivity.this);
 		SharedPreferences.Editor editor = preferences.edit();
 		editor.putString(KEY_ENTRIES, null);
 		editor.apply(); */
-
+		modeByte = new byte[1];
 		temp_startIndex = 0;
 		humi_startIndex = 0;
 
-		final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-		String json = preferences.getString(TEMP_ENTRIES, null);
-		String json_humi = preferences.getString(HUMI_ENTRIES, null);
+		SQLiteDatabase db = thdbHelper.getWritableDatabase();
 
-		ArrayList<String> t = new ArrayList<String>();
-		ArrayList<String> h = new ArrayList<String>();
-		if (json != null) {
-			try {
-				JSONArray a = new JSONArray(json);
-				Log.d("skinny", "json array size:" + a.length());
-				for (int i = 0; i < a.length(); i++) {
-					//String en = a.optString(i);
-					JSONObject obj = a.getJSONObject(i);
-					String en = obj.getString("val");
-					temp_startIndex++;
-					temp_entries.add(new Entry(temp_startIndex, Float.parseFloat(en)));
-					dates.add(obj.getString("dt"));
-					//Log.d("skinny", String.valueOf(i) + "/" + en);
-				}
-				Entry temp_min = temp_entries.stream().min(Comparator.comparing(Entry::getY)).orElseThrow(NoSuchElementException::new);
-				Entry temp_max = temp_entries.stream().max(Comparator.comparing(Entry::getY)).orElseThrow(NoSuchElementException::new);
-				temp_avrg = (temp_max.getY() + temp_min.getY()) / 2;
-				temp_minmax = temp_max.getY() - temp_min.getY();
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-
-		if (json_humi != null) {
-			try {
-				JSONArray a_humi = new JSONArray(json_humi);
-				Log.d("skinny", "json array size:" + a_humi.length());
-				for (int i = 0; i < a_humi.length(); i++) {
-					//String en = a.optString(i);
-					JSONObject obj = a_humi.getJSONObject(i);
-					String en = obj.getString("val");
-					humi_startIndex++;
-					humi_entries.add(new Entry(humi_startIndex, Float.parseFloat(en)));
-					dates.add(obj.getString("dt"));
-					//Log.d("skinny", String.valueOf(i) + "/" + en);
-				}
-				Entry humi_min = humi_entries.stream().min(Comparator.comparing(Entry::getY)).orElseThrow(NoSuchElementException::new);
-				Entry humi_max = humi_entries.stream().max(Comparator.comparing(Entry::getY)).orElseThrow(NoSuchElementException::new);
-				humi_avrg = (humi_max.getY() + humi_min.getY()) / 2;
-				humi_minmax = humi_max.getY() - humi_min.getY();
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-
-		/*TimerTask tt = new TimerTask() {
-			@Override
-			public void run() {
-				Random random = new Random();
-				//int randomNumber = random.nextInt(80 – 65) + 65;
-				int randomNumber = random.nextInt(3900 - 3500) + 3500;
-				//int randomNumber = random.nextInt(3900 - 3500) - 5000;
-				float rN = (float)randomNumber / 100;
-				//Log.d("skinny", "Testing..." + getString(R.string.hts_value, rN));
-				if (!pause)
-					plot(rN);
-			}
-		};
-
-		Timer timer = new Timer();
-		timer.schedule(tt, 0 * 60 * 1000, 2 * 1000);*/
+//		Cursor cursor = db.rawQuery("SELECT * FROM DEV_DATA WHERE data_type = 4",null);
+//		if (cursor.moveToFirst()) {
+//			for (int i = 0 ; i < cursor.getCount() ; i++)
+//			{
+//				Log.v("skinny_OYM", "saved DB data load type 4 : " + cursor.getFloat(7) + " Data count : " + (i+1) + " / " +cursor.getCount());
+//				temp_entries.add(new Entry(temp_startIndex, cursor.getFloat(7)));
+//				temp_startIndex++;
+//				cursor.move(1);
+//			}
+//			Entry temp_min = temp_entries.stream().min(Comparator.comparing(Entry::getY)).orElseThrow(NoSuchElementException::new);
+//			Entry temp_max = temp_entries.stream().max(Comparator.comparing(Entry::getY)).orElseThrow(NoSuchElementException::new);
+//			temp_avrg = (temp_max.getY() + temp_min.getY()) / 2;
+//			temp_minmax = temp_max.getY() - temp_min.getY();
+//		}
+//
+//		cursor = db.rawQuery("SELECT * FROM DEV_DATA WHERE data_type = 3",null);
+//		if (cursor.moveToFirst()) {
+//			for (int i = 0 ; i < cursor.getCount() ; i++)
+//			{
+//				Log.v("skinny_OYM", "saved DB data load type 3 : " + cursor.getFloat(7) + " Data count : " + (i+1) + " / " +cursor.getCount());
+//				humi_entries.add(new Entry(humi_startIndex, cursor.getFloat(7)));
+//				humi_startIndex++;
+//				cursor.move(1);
+//			}
+//			Entry humi_min = humi_entries.stream().min(Comparator.comparing(Entry::getY)).orElseThrow(NoSuchElementException::new);
+//			Entry humi_max = humi_entries.stream().max(Comparator.comparing(Entry::getY)).orElseThrow(NoSuchElementException::new);
+//			humi_avrg = (humi_max.getY() + humi_min.getY()) / 2;
+//			humi_minmax = humi_max.getY() - humi_min.getY();
+//		}
+//		cursor.close();
 
 		chart_temp = (LineChart) findViewById(R.id.chart_temp);
 		chart_temp.setDescription(null);
@@ -226,8 +210,8 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 		}
 		if (temp_minmax > 170) {
 			temp_minmax = 170;
-		} else if (temp_minmax < 50) {
-			temp_minmax = 50;
+		} else if (temp_minmax < 70) {
+			temp_minmax = 70;
 		}
 
 		chart_temp.zoom(1.0f,170f/temp_minmax,0f,0f);
@@ -258,71 +242,12 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 		}
 		if (humi_minmax > 100) {
 			humi_minmax = 100;
-		} else if (humi_minmax < 50) {
-			humi_minmax = 50;
+		} else if (humi_minmax < 70) {
+			humi_minmax = 70;
 		}
 
 		chart_humi.zoom(1.0f,100f/humi_minmax,0f,0f);
 		chart_humi.centerViewToY(humi_avrg, YAxis.AxisDependency.LEFT);
-
-
-		Button resetButton = (Button) findViewById(R.id.action_reset);
-		resetButton.setOnClickListener(new Button.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				//Log.d("skinny", "test");
-				temp_startIndex = 0;
-				humi_startIndex = 0;
-				temp_entries.clear();
-				humi_entries.clear();
-				dates.clear();
-			}
-		});
-
-		Button uploadButton = (Button) findViewById(R.id.upload_data);
-		uploadButton.setVisibility(View.GONE);
-		uploadButton.setOnClickListener(new Button.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				//Log.d("skinny", "upload click");
-				// 서버로 전송시작
-				upload();
-				/*pause = true;
-
-				final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(HTActivity.this);
-				String json = preferences.getString(KEY_ENTRIES, null);
-
-				ArrayList<String> t = new ArrayList<String>();
-				if (json != null) {
-					Log.d("skinny", json);
-					new OkHttpHandlerTransfer().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,"{\"data\" : " + json + "}");
-				}*/
-			}
-
-		});
-
-		Button configButton = (Button) findViewById(R.id.config_button);
-		configButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) { openConfigActivity(); }
-		});
-
-		Button downloadButton = (Button) findViewById(R.id.download_button);
-		downloadButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				downLoadBroadcast();
-			}
-		});
-
-		Button configUploadButton = (Button) findViewById(R.id.upload_button);
-		configUploadButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				configUploadBroadcast();
-			}
-		});
-
 
 
 		LineDataSet temp_dataSet = new LineDataSet(temp_entries, ""); // add entries to dataset
@@ -340,6 +265,7 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 		LineData temp_lineData = new LineData(temp_dataSet);
 		chart_temp.setData(temp_lineData);
 		chart_temp.invalidate();
+		chart_temp.clear();
 
 		LineDataSet humi_dataSet = new LineDataSet(humi_entries, ""); // add entries to dataset
 		//dataSet.setFillAlpha(65);
@@ -356,31 +282,194 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 		LineData humi_lineData = new LineData(humi_dataSet);
 		chart_humi.setData(humi_lineData);
 		chart_humi.invalidate();
+		chart_humi.clear();
 
+		Button resetButton = (Button) findViewById(R.id.action_reset);
+		resetButton.setOnClickListener(new Button.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				graphReset();
+			}
+		});
+
+		Button menuButton = (Button) findViewById(R.id.button_menu);
+		menuButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				openMenuDialog();
+			}
+		});
 	}
 
-	public void downLoadBroadcast() {
-		final Intent broadcast = new Intent(HTService.BROADCAST_TEST_DOWNLOAD_BUTTON);
+	public void openMenuDialog() {
+		menuDialog = new Dialog(HTActivity.this);
+		menuDialog.setContentView(R.layout.dialog_menu);
+		menuDialog.show();
+
+		menu00Button = menuDialog.findViewById(R.id.button_menu_00);
+		menu01Button = menuDialog.findViewById(R.id.button_menu_01);
+		menu02Button = menuDialog.findViewById(R.id.button_menu_02);
+		menu03Button = menuDialog.findViewById(R.id.button_menu_03);
+		menu04Button = menuDialog.findViewById(R.id.button_menu_04);
+		menu05Button = menuDialog.findViewById(R.id.button_menu_05);
+		menu06Button = menuDialog.findViewById(R.id.button_menu_06);
+		menu07Button = menuDialog.findViewById(R.id.button_menu_07);
+
+		menu00Button.setOnClickListener(menuClicked);
+		menu01Button.setOnClickListener(menuClicked);
+		menu02Button.setOnClickListener(menuClicked);
+		menu03Button.setOnClickListener(menuClicked);
+		menu04Button.setOnClickListener(menuClicked);
+		menu05Button.setOnClickListener(menuClicked);
+		menu06Button.setOnClickListener(menuClicked);
+		menu07Button.setOnClickListener(menuClicked);
+	}
+
+	View.OnClickListener menuClicked = new View.OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			switch ( v.getId() ) {
+
+				case R.id.button_menu_00:
+					modeByte[0] = 0x00;
+					LiveBroadcast(modeByte);
+					menuDialog.dismiss();
+					break;
+
+				case R.id.button_menu_01:
+					openConfigActivity();
+					menuDialog.dismiss();
+					break;
+
+				case R.id.button_menu_02:
+					modeByte[0] = 0x02;
+					LiveBroadcast(modeByte);
+					menuDialog.dismiss();
+					break;
+
+				case R.id.button_menu_03:
+					modeByte[0] = 0x03;
+					LiveBroadcast(modeByte);
+					graphReset();
+					menuDialog.dismiss();
+					break;
+
+				case R.id.button_menu_04:
+					modeByte[0] = 0x04;
+					LiveBroadcast(modeByte);
+					menuDialog.dismiss();
+					break;
+				case R.id.button_menu_05:
+					modeByte[0] = 0x05;
+					LiveBroadcast(modeByte);
+					menuDialog.dismiss();
+					break;
+				case R.id.button_menu_06:
+					modeByte[0] = 0x06;
+					graphReset();
+					LiveBroadcast(modeByte);
+					menuDialog.dismiss();
+					break;
+				case R.id.button_menu_07:
+					modeByte[0] = 0x07;
+					graphReset();
+					LiveBroadcast(modeByte);
+					menuDialog.dismiss();
+					break;
+			}
+		}
+	};
+
+	public void standbyBroadcast() {
+		final Intent broadcast = new Intent(HTService.BROADCAST_THD_STANDBY_BUTTON);
 		LocalBroadcastManager.getInstance(this).sendBroadcast(broadcast);
 		//showToast("Download button clicked");
 	}
 
-	public void configUploadBroadcast() {
-		final Intent broadcast = new Intent(HTService.BROADCAST_TEST_UPLOAD_BUTTON);
+	public void LiveBroadcast(byte[] modeByte) {
+		final Intent broadcast = new Intent(HTService.BROADCAST_THD_LIVE_BUTTON);
 		broadcast.putExtra("configByteArray",configByteArray());
+		broadcast.putExtra("MODE_SELECT",modeByte);
 		LocalBroadcastManager.getInstance(this).sendBroadcast(broadcast);
 	}
 
+	private void init_tables() {
+		thdbHelper = new THDBHelper(this);
+	}
+
+	private void save_init_value() {
+		SQLiteDatabase db = thdbHelper.getWritableDatabase();
+
+		Cursor cursor_data_type = db.rawQuery("SELECT * FROM DATA_TYPE",null);
+		Cursor cursor_dev_type = db.rawQuery("SELECT * FROM DEV_TYPE",null);
+		Cursor cursor_user_info = db.rawQuery("SELECT * FROM USER_INFO",null);
+
+		if (!cursor_data_type.moveToFirst()){
+			db.execSQL("INSERT OR REPLACE INTO DATA_TYPE (sensor_type) VALUES (0);");
+			db.execSQL("INSERT OR REPLACE INTO DATA_TYPE (sensor_type) VALUES (1);");
+			db.execSQL("INSERT OR REPLACE INTO DATA_TYPE (sensor_type) VALUES (2);");
+			Log.v("OYM", "check point 1");
+		} else {
+			for (int i = 0 ; i < cursor_data_type.getCount() ; i++)
+			{
+				Log.v("OYM", "data type inserted : " + cursor_data_type.getInt(1));
+				cursor_data_type.moveToNext();
+			}
+//			db.execSQL("DELETE FROM DATA_TYPE;");
+		}
+
+		if (!cursor_dev_type.moveToFirst()){
+			db.execSQL("INSERT OR REPLACE INTO DEV_TYPE (dev_type) VALUES (0);");
+			Log.v("OYM", "check point 2");
+		} else {
+			for (int i = 0 ; i < cursor_dev_type.getCount() ; i++)
+			{
+				Log.v("OYM", "dev type inserted : " + cursor_dev_type.getInt(1));
+				cursor_data_type.moveToNext();
+			}
+//			db.execSQL("DELETE FROM DATA_TYPE;");
+		}
+
+		if (!cursor_user_info.moveToFirst()){
+			Log.v("OYM", "user info is null");
+		}
+		cursor_data_type.close();
+		cursor_dev_type.close();
+		cursor_user_info.close();
+
+		db.close();
+
+	}
+
 	public byte[] configByteArray() {
-		byte[] textByteArray = new byte[28];
-		textByteArray[0] = (byte) 0x3C; textByteArray[1] = (byte) 0xf2; textByteArray[2] = (byte) 0xff; textByteArray[3] = (byte) 0xfe;
-		textByteArray[4] = (byte) 0x4a; textByteArray[5] = (byte) 0x08; textByteArray[6] = (byte) 0x00; textByteArray[7] = (byte) 0xfe;
-		textByteArray[8] = (byte) 0x32; textByteArray[9] = (byte) 0x0e; textByteArray[10] = (byte) 0x00; textByteArray[11] = (byte) 0xfe;
-		textByteArray[12] = (byte) 0xaf; textByteArray[13] = (byte) 0x08; textByteArray[14] = (byte) 0x00; textByteArray[15] = (byte) 0xfe;
-		textByteArray[16] = (byte) 0x05; textByteArray[17] = (byte) 0x00; textByteArray[18] = (byte) 0x00; textByteArray[19] = (byte) 0x00;
-		textByteArray[20] = (byte) 0x02; textByteArray[21] = (byte) 0x00; textByteArray[22] = (byte) 0x00; textByteArray[23] = (byte) 0x00;
-		textByteArray[24] = (byte) 0x07; textByteArray[25] = (byte) 0x08; textByteArray[26] = (byte) 0x09; textByteArray[27] = (byte) 0x11;
-		return textByteArray;
+		byte[] configByteArray = new byte[34];
+		configByteArray[0] = 0x00; configByteArray[1] = 0x00; configByteArray[2] = 0x00; configByteArray[3] = (byte) 0xFE;
+
+		// ***** LTL - Limit Temp Low *****
+		configByteArray[4] = 0x00; configByteArray[5] = 0x00; configByteArray[6] = 0x00; configByteArray[7] = (byte) 0xFE;
+
+		// ***** LHH - Limit Humi High *****
+		configByteArray[8] = 0x00; configByteArray[9] = 0x00; configByteArray[10] = 0x00; configByteArray[11] = (byte) 0xFE;
+
+		// ***** LHL - Limit Humi Low *****
+		configByteArray[12] = 0x00; configByteArray[13] = 0x00; configByteArray[14] = 0x00; configByteArray[15] = (byte) 0xFE;
+
+		// ***** SI - Store Interval *****
+		configByteArray[16] = 0x03; configByteArray[17] = 0x00; configByteArray[18] = 0x00; configByteArray[19] = 0x00;
+
+		// ***** DI - Detect Interval *****
+		configByteArray[20] = 0x01; configByteArray[21] = 0x00; configByteArray[22] = 0x00; configByteArray[23] = 0x00;
+
+		// ***** ASA - Auto End After *****
+		configByteArray[24] =  0x00; configByteArray[25] = 0x00; configByteArray[26] = 0x00; configByteArray[27] = 0x00;
+
+		// ***** AEA - Auto End After *****
+		configByteArray[28] =  0x00; configByteArray[29] = 0x00; configByteArray[30] = 0x00; configByteArray[31] = 0x00;
+
+		// ***** ST - Sensor Type *****
+		configByteArray[32] = 0x02; configByteArray[33] = 0x00;
+
+		return configByteArray;
 	}
 
 	public void upload() {
@@ -551,7 +640,12 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 		tempValueView.setText(R.string.not_available_value);
 		humiValueView.setText(R.string.not_available_value);
 		batteryLevelView.setText(R.string.not_available);
-
+		tempCountView.setText("0");
+		humiCountView.setText("0");
+		tempMinView.setText("Min : ");
+		tempMaxView.setText("Max : ");
+		humiMinView.setText("Min : ");
+		humiMaxView.setText("Max : ");
 		setUnits();
 	}
 
@@ -574,7 +668,7 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 
 	@Override
 	protected void onServiceBound(final HTService.HTSBinder binder) {
-		onTemperatureMeasurementReceived(binder.getBluetoothDevice().getName(), binder.getTemperature(), binder.getType());
+		onTemperatureMeasurementReceived(binder.getBluetoothDevice().getName(), binder.getTemperature(), binder.getType(), binder.getDatetime());
 	}
 
 	@Override
@@ -644,18 +738,30 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 		batteryLevelView.setText(R.string.not_available);
 	}
 
-	public void plot(Float value, int type) {
+	public void plot(Float value, int type,String datetime) {
 		runOnUiThread(new Runnable() {
 			@RequiresApi(api = Build.VERSION_CODES.N)
 			@Override
 			public void run() {
 				//Log.d("skinny", String.valueOf(value));
+				SQLiteDatabase db = thdbHelper.getWritableDatabase();
 
-
-				Calendar cal = Calendar.getInstance();
-
+				Log.v("skinny_OYM", "Date time : " + datetime);
 				if ( type == 4 ) {
 					tempValueView.setText(getString(R.string.hts_value, value));
+
+					db.execSQL("INSERT INTO DEV_DATA (date_time, data_type, sensor_data)" +
+									"VALUES (datetime('" +  datetime + "'), " + type + ", " + value + ")");
+//					Cursor cursor = db.rawQuery("SELECT * FROM DEV_DATA",null);
+//					if (cursor.moveToFirst()){
+//						Log.v("OYM", "dev data inserted : " + cursor.getFloat(7));
+//						for (int i = 0 ; i < cursor.getCount()-1 ; i++)
+//						{
+//							cursor.moveToNext();
+//							Log.v("OYM", "dev data inserted : " + cursor.getFloat(7));
+//						}
+//					}
+//					cursor.close();
 
 					temp_startIndex++;
 					temp_entries.add(new Entry(temp_startIndex, value));
@@ -663,39 +769,27 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 					Entry temp_max = temp_entries.stream().max(Comparator.comparing(Entry::getY)).orElseThrow(NoSuchElementException::new);
 					tempMinView.setText("Min : " +getString(R.string.hts_value, temp_min.getY()));
 					tempMaxView.setText("Max : " +getString(R.string.hts_value, temp_max.getY()));
-					dates.add(sdf.format(cal.getTime()));
+					dates.add(datetime);
 					if (temp_entries.size() > 200000) {
 						temp_entries.remove(0);
 						dates.remove(0);
 					}
-					final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(HTActivity.this);
-					SharedPreferences.Editor editor = preferences.edit();
-					JSONArray a = new JSONArray();
-					try {
 
-						//Log.d("skinny", sdf.format(cal.getTime()) + " " + String.valueOf(value));
-
-						for (int i = 0; i < temp_entries.size(); i++) {
-							JSONObject obj = new JSONObject();
-							obj.put("dt", dates.get(i));
-							obj.put("val", String.valueOf(temp_entries.get(i).getY()));
-							//obj.put("val", dates.get(i));
-							a.put(obj);
-
-							//a.put(String.valueOf(entries.get(i).getY()));
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-
-					if (!temp_entries.isEmpty()) {
-						editor.putString(TEMP_ENTRIES, a.toString());
-					} else {
-						editor.putString(TEMP_ENTRIES, null);
-					}
-					editor.apply();
 				} else if ( type == 3 ) {
 					humiValueView.setText(getString(R.string.hts_value, value));
+
+					db.execSQL("INSERT INTO DEV_DATA (date_time, data_type, sensor_data)" +
+							"VALUES (datetime('" +  datetime + "'), " + type + ", " + value + ")");
+//					Cursor cursor = db.rawQuery("SELECT * FROM DEV_DATA",null);
+//				if (cursor.moveToFirst()){
+//						Log.v("OYM", "dev data inserted : " + cursor.getFloat(7));
+//						for (int i = 0 ; i < cursor.getCount()-1 ; i++)
+//						{
+//							cursor.moveToNext();
+//							Log.v("OYM", "dev data inserted : " + cursor.getFloat(7));
+//						}
+//					}
+//					cursor.close();
 
 					humi_startIndex++;
 					humi_entries.add(new Entry(humi_startIndex, value));
@@ -703,39 +797,12 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 					Entry humi_max = humi_entries.stream().max(Comparator.comparing(Entry::getY)).orElseThrow(NoSuchElementException::new);
 					humiMinView.setText("Min : " +getString(R.string.hts_value, humi_min.getY()));
 					humiMaxView.setText("Max : " +getString(R.string.hts_value, humi_max.getY()));
-					dates.add(sdf.format(cal.getTime()));
+					dates.add(datetime);
 					if (humi_entries.size() > 200000) {
 						humi_entries.remove(0);
 						dates.remove(0);
 					}
-					final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(HTActivity.this);
-					SharedPreferences.Editor editor = preferences.edit();
-					JSONArray a = new JSONArray();
-					try {
-
-						//Log.d("skinny", sdf.format(cal.getTime()) + " " + String.valueOf(value));
-
-						for (int i = 0; i < humi_entries.size(); i++) {
-							JSONObject obj = new JSONObject();
-							obj.put("dt", dates.get(i));
-							obj.put("val", String.valueOf(humi_entries.get(i).getY()));
-							//obj.put("val", dates.get(i));
-							a.put(obj);
-
-							//a.put(String.valueOf(entries.get(i).getY()));
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-
-					if (!humi_entries.isEmpty()) {
-						editor.putString(HUMI_ENTRIES, a.toString());
-					} else {
-						editor.putString(HUMI_ENTRIES, null);
-					}
-					editor.apply();
 				}
-
 
 
 				if ( type == 4 ) {
@@ -752,6 +819,10 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 					temp_dataSet.setDrawValues(false);
 
 					LineData temp_lineData = new LineData(temp_dataSet);
+					if ( temp_startIndex == 1 ) {
+						chart_temp.zoom(1.0f,170/70f,0f,0f);
+						chart_temp.centerViewToY(30, YAxis.AxisDependency.LEFT);
+					}
 					chart_temp.setData(temp_lineData);
 					chart_temp.invalidate();
 
@@ -770,26 +841,22 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 					humi_dataSet.setDrawValues(false);
 
 					LineData humi_lineData = new LineData(humi_dataSet);
+					if ( humi_startIndex == 1 ) {
+						chart_humi.zoom(1.0f,100f/70f,0f,0f);
+						chart_humi.centerViewToY(30, YAxis.AxisDependency.LEFT);
+					}
 					chart_humi.setData(humi_lineData);
 					chart_humi.invalidate();
 
 					humiCountView.setText(String.valueOf(humi_entries.size()));
 				}
-
-				/*entries.add(new Entry(1, 2));
-				entries.add(new Entry(2, 3));
-				entries.add(new Entry(3, 8));
-
-				LineDataSet dataSet = new LineDataSet(entries, "Label"); // add entries to dataset
-				LineData lineData = new LineData(dataSet);
-				chart.setData(lineData);
-				chart.invalidate(); // refresh*/
+				db.close();
 			}
 		});
 
 	}
 
-	private void onTemperatureMeasurementReceived(String deviceName, Float value, int type) {
+	private void onTemperatureMeasurementReceived(String deviceName, Float value, int type, String datetime) {
 		if (value != null) {
 			final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 			//preferences.edit().
@@ -807,7 +874,7 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 					break;
 			}
 			if (!pause)
-				plot(value,type);
+				plot(value,type,datetime);
 			//tempValueView.setText(getString(R.string.hts_value, value));
 			Log.d("skinny", deviceName + "/" + String.valueOf(value));
 		} else {
@@ -826,19 +893,21 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 			final String action = intent.getAction();
 
 			if (HTService.BROADCAST_HTS_MEASUREMENT.equals(action)) {
+				final String mac_address = intent.getStringExtra("mac_address");
+				final String datetime = intent.getStringExtra("THD_datetime");
 				final float value = intent.getFloatExtra(HTService.EXTRA_TEMPERATURE, 0.0f);
 				final String deviceName = intent.getStringExtra(HTService.EXTRA_DEVICE_NAME);
 				final int type = intent.getIntExtra("type",0);
-				Log.d("skinny_OYM",  "Type # = " + type +" / value = " + value);
+				Log.d("skinny_OYM",  "Type # = " + type +" / value = " + value + " / mac address" + mac_address);
 				// Update GUI
-				onTemperatureMeasurementReceived(deviceName, value, type);
+				onTemperatureMeasurementReceived(deviceName, value, type, datetime);
 			} else if (HTService.BROADCAST_BATTERY_LEVEL.equals(action)) {
 				final int batteryLevel = intent.getIntExtra(HTService.EXTRA_BATTERY_LEVEL, 0);
 				// Update GUI
 				onBatteryLevelChanged(batteryLevel);
 			} else if (HTService.BROADCAST_THD_DATETIME.equals(action)) {
 				String calendar = intent.getStringExtra(HTService.EXTRA_DATETIME);
-				Log.d("skinny", " Current time = " + calendar);
+				Log.d("skinny_OYM", " Current time = " + calendar);
 				showToast(calendar);
 			}
 		}
@@ -856,4 +925,24 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 		Intent intent = new Intent(this, ConfigActivity.class);
 		startActivity(intent);
 	}
+
+	public void graphReset() {
+		SQLiteDatabase db = thdbHelper.getWritableDatabase();
+		db.execSQL("DELETE FROM DEV_DATA;");
+		db.close();
+		setDefaultUI();
+		temp_startIndex = 0;
+		humi_startIndex = 0;
+		temp_entries.clear();
+		humi_entries.clear();
+		dates.clear();
+
+		chart_temp.zoom(0f,0f,0,0);
+		chart_humi.zoom(0f,0f,0,0);
+		chart_temp.clear();
+		chart_humi.clear();
+
+
+
+		}
 }

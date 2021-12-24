@@ -64,7 +64,7 @@
                 android:background="#D5E9EC"
                 android:gravity="center_vertical"
                 android:paddingStart="10dp"
-                android:text="Start measuring after time 10 minute" />
+                android:text="Start measuring immediately" />
 
             <Button
                 android:id="@+id/startMeasure_button"
@@ -90,7 +90,7 @@
                 android:background="#D5E9EC"
                 android:gravity="center_vertical"
                 android:paddingStart="10dp"
-                android:text="Keep measuring 1 day and power-off" />
+                android:text="Keep measuring until storage is full" />
 
             <Button
                 android:id="@+id/keepMeasure_button"
@@ -116,7 +116,7 @@
                 android:background="#D5E9EC"
                 android:gravity="center_vertical"
                 android:paddingStart="10dp"
-                android:text="Save period is 1 minute\nDetection period is 5 seconds" />
+                android:text="Save period is 3 second\nDetection period is 1 seconds" />
 
             <Button
                 android:id="@+id/savePeriod_button"
@@ -142,7 +142,7 @@
                 android:background="#D5E9EC"
                 android:gravity="center_vertical"
                 android:paddingStart="10dp"
-                android:text="Desired temperature is above 0℃ and below 20℃\nDesired humidity is above 0% and below 20%" />
+                android:text="Desired temperature is above 0℃ and below 30℃\nDesired humidity is above 20% and below 60%" />
 
             <Button
                 android:id="@+id/limit_button"

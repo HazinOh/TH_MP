@@ -34,10 +34,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import androidx.annotation.NonNull;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -45,16 +41,22 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
+import com.ubatt.android.th_mp.AppHelpFragment;
+import com.ubatt.android.th_mp.R;
+import com.ubatt.android.th_mp.scanner.ScannerFragment;
+import com.ubatt.android.th_mp.utility.DebugLogger;
+
 import java.util.UUID;
 
 import no.nordicsemi.android.ble.BleManagerCallbacks;
 import no.nordicsemi.android.log.ILogSession;
 import no.nordicsemi.android.log.LocalLogSession;
 import no.nordicsemi.android.log.Logger;
-import com.ubatt.android.th_mp.AppHelpFragment;
-import com.ubatt.android.th_mp.R;
-import com.ubatt.android.th_mp.scanner.ScannerFragment;
-import com.ubatt.android.th_mp.utility.DebugLogger;
 
 /**
  * <p>
@@ -426,7 +428,7 @@ public abstract class BleProfileServiceReadyActivity<E extends BleProfileService
 	public void onConnectClicked(final View view) {
 		if (isBLEEnabled()) {
 			if (service == null) {
-				setDefaultUI();
+				//setDefaultUI();
 				showDeviceScanningDialog(getFilterUUID());
 			} else {
 				service.disconnect();
