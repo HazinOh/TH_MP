@@ -26,6 +26,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
+import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -111,59 +112,51 @@ public class HTManager extends BatteryManager<HTManagerCallbacks> {
 
 
 
+
 	public void configUpload(byte[] configByteArray, byte[] modeByte) {
 
 		switch (modeByte[0]) {
 			case 0x00:
-				readCharacteristic(OTSCharacteristic)
-						.with(OTSCallback)
-						.fail((device, status) -> log(Log.WARN,"OYM :  Device Information OTS characteristic not found / status = " + status))
+			case 0x02:
+			case 0x03:
+			case 0x04:
+			case 0x05:
+			case 0x06:
+			case 0x07:
+				writeCharacteristic(temperatureTypeCharacteristic, modeByte)
+						.with((device, data) -> log(LogContract.Log.Level.APPLICATION,
+								"\"" + data.toString() + "\" skinny_OYM - Mode selected : " + data ))
 						.enqueue();
 				break;
 			case 0x01:
-				Log.d("Skinny", "OYM : config upload data = " + configByteArray);
+				StringBuilder sb = new StringBuilder();
+				for(final byte b: configByteArray)
+					sb.append(String.format("%02x ", b&0xff));
+				Log.d("Skinny_oym", "OYM : config upload data = " + sb.toString());
 
 				writeCharacteristic(OTSCharacteristic, configByteArray)
 						.with((device, data) -> log(LogContract.Log.Level.APPLICATION,
 								"\"" + data.toString() + "\" OTS sent OYM"))
 						.enqueue();
-				readCharacteristic(OTSCharacteristic)
-						.with(OTSCallback)
-						.fail((device, status) -> log(Log.WARN,"OYM :  Device Information OTS characteristic not found / status = " + status))
-						.enqueue();
+
+				new Handler().postDelayed(new Runnable() {
+					@Override
+					public void run() {
+						writeCharacteristic(temperatureTypeCharacteristic, modeByte)
+								.with((device, data) -> log(LogContract.Log.Level.APPLICATION,
+										"\"" + data.toString() + "\" skinny_OYM - Mode selected : " + data ))
+								.enqueue();
+					}
+				},500);
 				break;
-			case 0x02:
-				// DO NOTHING ONLY SEND MODE BYTE
-				break;
-			case 0x03:
-				// DO NOTHING ONLY SEND MODE BYTE
-				break;
-			case 0x04:
-				// DO NOTHING ONLY SEND MODE BYTE
-				break;
-			case 0x05:
-				// DO NOTHING ONLY SEND MODE BYTE
-				break;
-			case 0x06:
-				// DO NOTHING ONLY SEND MODE BYTE
-				break;
-			case 0x07:
-				// DO NOTHING ONLY SEND MODE BYTE
+			case (byte) 0x99:
+
 				break;
 			default:
 				break;
 		}
-		writeCharacteristic(temperatureTypeCharacteristic, stop)
-				.with((device, data) -> log(LogContract.Log.Level.APPLICATION,
-						"\"" + data.toString() + "\" skinny_OYM - Mode selected : " + data ))
-				.enqueue();
-		sleep(100);
-		writeCharacteristic(temperatureTypeCharacteristic, modeByte)
-				.with((device, data) -> log(LogContract.Log.Level.APPLICATION,
-						"\"" + data.toString() + "\" skinny_OYM - Mode selected : " + data ))
-				.enqueue();
-	}
 
+	}
 
 
 
@@ -181,7 +174,8 @@ public class HTManager extends BatteryManager<HTManagerCallbacks> {
 	private DataReceivedCallback OTSCallback = new OTSDataCallback() {
 		@Override
 		public void onOTSReceived(@NonNull BluetoothDevice device, Data data) {
-			Log.d("skinny_OYM" , "OTS read data : " + data.toString());
+			Log.d("skinny_OYM" , "OTS manager read data : " + String.valueOf(data));
+			mCallbacks.onOTSReceived(device,data);
 		}
 	};
 

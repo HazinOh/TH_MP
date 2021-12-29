@@ -38,7 +38,8 @@
                 android:background="#D5E9EC"
                 android:gravity="center_vertical"
                 android:paddingStart="10dp"
-                android:text="Sensor type : temperature and humidity" />
+                android:text="Sensor type : temperature and humidity"
+                android:textSize="12sp" />
 
             <Button
                 android:id="@+id/sensorType_button"
@@ -46,7 +47,8 @@
                 android:layout_height="match_parent"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
-                android:text="..." />
+                android:text="..."
+                android:textSize="12sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -64,7 +66,8 @@
                 android:background="#D5E9EC"
                 android:gravity="center_vertical"
                 android:paddingStart="10dp"
-                android:text="Start measuring immediately" />
+                android:text="Start measuring immediately"
+                android:textSize="12sp" />
 
             <Button
                 android:id="@+id/startMeasure_button"
@@ -72,7 +75,8 @@
                 android:layout_height="match_parent"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
-                android:text="..." />
+                android:text="..."
+                android:textSize="12sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -90,7 +94,8 @@
                 android:background="#D5E9EC"
                 android:gravity="center_vertical"
                 android:paddingStart="10dp"
-                android:text="Keep measuring until storage is full" />
+                android:text="Keep measuring until storage is full"
+                android:textSize="12sp" />
 
             <Button
                 android:id="@+id/keepMeasure_button"
@@ -98,7 +103,8 @@
                 android:layout_height="match_parent"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
-                android:text="..." />
+                android:text="..."
+                android:textSize="12sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -116,7 +122,8 @@
                 android:background="#D5E9EC"
                 android:gravity="center_vertical"
                 android:paddingStart="10dp"
-                android:text="Save period is 3 second\nDetection period is 1 seconds" />
+                android:text="Save period is 3 second\nDetection period is 1 seconds"
+                android:textSize="12sp" />
 
             <Button
                 android:id="@+id/savePeriod_button"
@@ -124,7 +131,8 @@
                 android:layout_height="match_parent"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
-                android:text="..." />
+                android:text="..."
+                android:textSize="12sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -142,7 +150,8 @@
                 android:background="#D5E9EC"
                 android:gravity="center_vertical"
                 android:paddingStart="10dp"
-                android:text="Desired temperature is above 0℃ and below 30℃\nDesired humidity is above 20% and below 60%" />
+                android:text="Desired temperature is above 0℃ and below 30℃\nDesired humidity is above 20% and below 60%"
+                android:textSize="12sp" />
 
             <Button
                 android:id="@+id/limit_button"
@@ -150,7 +159,8 @@
                 android:layout_height="match_parent"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
-                android:text="..." />
+                android:text="..."
+                android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
 

@@ -33,7 +33,9 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -48,6 +50,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.ubatt.android.th_mp.AppHelpFragment;
 import com.ubatt.android.th_mp.R;
+import com.ubatt.android.th_mp.ht.HTService;
 import com.ubatt.android.th_mp.scanner.ScannerFragment;
 import com.ubatt.android.th_mp.utility.DebugLogger;
 
@@ -431,7 +434,22 @@ public abstract class BleProfileServiceReadyActivity<E extends BleProfileService
 				//setDefaultUI();
 				showDeviceScanningDialog(getFilterUUID());
 			} else {
-				service.disconnect();
+			final Intent broadcast = new Intent(HTService.BROADCAST_THD_LIVE_BUTTON);
+			final byte[] configDummy = new byte[34];
+			final byte[] modeByte = new byte[1];
+			modeByte[0] = (byte) 0x00;
+			broadcast.putExtra("configByteArray",configDummy);
+			broadcast.putExtra("MODE_SELECT",modeByte);
+			LocalBroadcastManager.getInstance(this).sendBroadcast(broadcast);
+
+				new Handler().postDelayed(new Runnable() {
+					@Override
+					public void run() {
+						service.disconnect();
+						Log.d("Skinny_oym", " Service disconnect ");
+					}
+				}, 500);
+
 			}
 		} else {
 			showBLEDialog();

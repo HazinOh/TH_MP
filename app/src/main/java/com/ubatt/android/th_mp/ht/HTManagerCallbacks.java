@@ -29,6 +29,6 @@ import no.nordicsemi.android.ble.common.profile.ht.TemperatureMeasurementCallbac
  * Interface {@link HTManagerCallbacks} must be implemented by {@link HTActivity} in order
  * to receive callbacks from {@link HTManager}.
  */
-interface HTManagerCallbacks extends BatteryManagerCallbacks, TemperatureMeasurementCallback, THDCallback{
+interface HTManagerCallbacks extends BatteryManagerCallbacks, TemperatureMeasurementCallback, THDCallback, OTSCallback{
 
 }

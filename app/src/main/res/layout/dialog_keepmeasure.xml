@@ -7,7 +7,7 @@
     android:textAlignment="viewEnd">
 
     <LinearLayout
-        android:layout_width="350dp"
+        android:layout_width="310dp"
         android:layout_height="250dp"
         android:gravity="center"
         android:orientation="vertical"
@@ -75,7 +75,7 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/button_keepmeasure_cancel"
+                android:id="@+id/button_cancel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -85,7 +85,7 @@
                 android:text="CANCEL" />
 
             <Button
-                android:id="@+id/button_keepmeasure_ok"
+                android:id="@+id/button_ok"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"

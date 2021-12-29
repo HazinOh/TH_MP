@@ -22,6 +22,7 @@
 
 package com.ubatt.android.th_mp.ht;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -31,6 +32,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -51,6 +55,7 @@ import java.util.Locale;
 import no.nordicsemi.android.ble.common.profile.ht.TemperatureMeasurementCallback;
 import no.nordicsemi.android.ble.common.profile.ht.TemperatureType;
 import no.nordicsemi.android.ble.common.profile.ht.TemperatureUnit;
+import no.nordicsemi.android.ble.data.Data;
 import no.nordicsemi.android.log.Logger;
 
 @SuppressWarnings("FieldCanBeLocal")
@@ -64,6 +69,8 @@ public class HTService extends BleProfileService implements HTManagerCallbacks {
 
 	public static final String BROADCAST_THD_DATETIME = "com.ubatt.android.TH.DATETIME";
 	public static final String EXTRA_DATETIME = "com.ubatt.android.TH.EXTRA_DATETIME";
+
+	public static final String BROADCAST_THD_OTS_FEATURE = "com.ubatt.android.TH.OTS_FEATURE";
 
 	public static final String BROADCAST_BATTERY_LEVEL = "com.ubatt.android.th_mp.BROADCAST_BATTERY_LEVEL";
 	public static final String EXTRA_BATTERY_LEVEL = "com.ubatt.android.th_mp.EXTRA_BATTERY_LEVEL";
@@ -79,11 +86,20 @@ public class HTService extends BleProfileService implements HTManagerCallbacks {
 	private int type;
 	private String datetime;
 
+	private byte[] configByteArray = new byte[34];
+	private byte[] modeByte = new byte[1];
+
+	private boolean receiveFlag = false;
+	private boolean safeFlag = false;
+	private boolean standbyFlag = false;
+
 	@SuppressWarnings("unused")
 	private HTManager manager;
 
 	private final LocalBinder minder = new HTSBinder();
 
+	public HTService() {
+	}
 
 
 	/**
@@ -124,11 +140,15 @@ public class HTService extends BleProfileService implements HTManagerCallbacks {
 		filter.addAction(ACTION_DISCONNECT);
 		registerReceiver(disconnectActionBroadcastReceiver, filter);
 		LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, THDDateTimeIntentFilter());
+		configByteArray[16] = 0x03;
+		configByteArray[17] = 0x00;
 	}
 
 	@Override
 	public void onDestroy() {
 		// when user has disconnected from the sensor, we have to cancel the notification that we've created some milliseconds before using unbindService
+		Log.d("Skinny_oym", "Service destroy");
+		safeFlag = true;
 		cancelNotification();
 		unregisterReceiver(disconnectActionBroadcastReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
@@ -148,6 +168,7 @@ public class HTService extends BleProfileService implements HTManagerCallbacks {
 	@Override
 	public void onDeviceDisconnected(@NonNull final BluetoothDevice device) {
 		super.onDeviceDisconnected(device);
+		safeFlag = true;
 		temp = null;
 	}
 
@@ -164,7 +185,24 @@ public class HTService extends BleProfileService implements HTManagerCallbacks {
 		//Log.d("Skinny", "Date Time received test 1: " + calenderString );
 		final String datetime = dateFormat.format(calendar.getTime());
 
+		 if (type == 3 && modeByte[0] !=0x06) {
+			int safeTimeMilliSec = 500;
+			int safeTime = (int) configByteArray[16] | ((int) configByteArray[17]<<8) ;
+			Log.d("Skinny_oym", "Safe time : " + safeTime );
+			if (safeTime != 1) {
+				safeTimeMilliSec = (safeTime-1) * 1000;
+			}
 
+			safeFlag = true;
+			Log.d("Skinny_oym", "Safe Flag Changed : " + safeFlag + " safe time milliSec : " + safeTimeMilliSec);
+			new Handler().postDelayed(new Runnable() {
+				@Override
+				public void run() {
+					safeFlag = false;
+					Log.d("Skinny_oym", "Safe Flag Changed : " + safeFlag );
+				}
+			}, safeTimeMilliSec);
+		}
 
 		final Intent broadcast = new Intent(BROADCAST_HTS_MEASUREMENT);
 		broadcast.putExtra(EXTRA_DEVICE, getBluetoothDevice());
@@ -198,7 +236,22 @@ public class HTService extends BleProfileService implements HTManagerCallbacks {
 		final String calenderString = String.format(Locale.US, "%1$te %1$tb %1$tY, %1$tH:%1$tM:%1$tS", calendar);
 		broadcast.putExtra(EXTRA_DATETIME, calenderString);
 		LocalBroadcastManager.getInstance(this).sendBroadcast(broadcast);
-		Log.d("Skinny", "Date Time received: " + calenderString + "2nd");
+		Log.d("Skinny_oym", "Date Time received: " + calenderString + "2nd");
+	}
+
+	@Override
+	public void onOTSReceived(@NonNull BluetoothDevice device, @NonNull Data data) {
+		int ACvalue = 0;
+		ACvalue |= (data.getByte(29) & (int)0xFF)<<24;
+		ACvalue |= (data.getByte(28) & (int)0xFF)<<16;
+		ACvalue |= (data.getByte(27) & (int)0xFF)<<8;
+		ACvalue |= (data.getByte(26) & (int)0xFF);
+		final Intent broadcast = new Intent(BROADCAST_THD_OTS_FEATURE);
+		broadcast.putExtra(EXTRA_DEVICE, getBluetoothDevice());
+		broadcast.putExtra("OTS_FEATURE",ACvalue);
+		LocalBroadcastManager.getInstance(this).sendBroadcast(broadcast);
+		Log.d("Skinny_oym", "OTS service data call back : " + data.toString());
+		Log.d("Skinny_oym", "OTS AC value : " + ACvalue);
 	}
 
 	private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
@@ -208,11 +261,51 @@ public class HTService extends BleProfileService implements HTManagerCallbacks {
 			if (BROADCAST_THD_STANDBY_BUTTON.equals(action)) {
 				manager.readDateTime();
 			} else if (BROADCAST_THD_LIVE_BUTTON.equals(action)) {
-				final byte[] configByteArray = intent.getByteArrayExtra("configByteArray");
-				final byte[] modeByte = intent.getByteArrayExtra("MODE_SELECT");
-				manager.configUpload(configByteArray,modeByte);
-			}
+				modeByte = intent.getByteArrayExtra("MODE_SELECT");
+					if ( modeByte[0] == 0x00) {
+						final Handler mHandler = new Handler();
+						mHandler.post(new Runnable() {
+							@Override
+							public void run() {
+								if (safeFlag) {
+									manager.configUpload(configByteArray, modeByte);
+								} else {
+									mHandler.postDelayed(this, 100);
+									Log.d("Skinny_oym", "Not safe Mode Select Delayed");
+								}
+							}
+						});
+					} else {
+						configByteArray = intent.getByteArrayExtra("configByteArray");
+						manager.configUpload(configByteArray, modeByte);
+						int safeTimeMilliSec = 500;
+						int safeTime = (int) configByteArray[16] | ((int) configByteArray[17]<<8) ;
+						Log.d("Skinny_oym", "Safe time : " + safeTime );
+						if (safeTime != 1) {
+							safeTimeMilliSec = (safeTime-1) * 1000;
+						}
 
+						safeFlag = true;
+						Log.d("Skinny_oym", "Safe Flag Changed : " + safeFlag + " safe time milliSec : " + safeTimeMilliSec);
+						new Handler().postDelayed(new Runnable() {
+							@Override
+							public void run() {
+								safeFlag = false;
+								Log.d("Skinny_oym", "Safe Flag Changed : " + safeFlag );
+							}
+						}, safeTimeMilliSec);
+					}
+
+
+//				Message msg1 = configHandler.obtainMessage();
+//				Bundle b1 = new Bundle();
+//				b1.putByteArray("configByteArray",configByteArray);
+//				b1.putByteArray("MODE_SELECT",modeByte);
+//				msg1.setData(b1);
+//				configHandler.sendMessage(msg1);
+
+;
+			}
 		}
 	};
 
@@ -302,4 +395,49 @@ public class HTService extends BleProfileService implements HTManagerCallbacks {
 				stopSelf();
 		}
 	};
+
+	@SuppressLint("HandlerLeak")
+	final android.os.Handler configHandler = new android.os.Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			Bundle bd = msg.getData();
+			byte[] configByteArray = bd.getByteArray("configByteArray");
+			byte[] modebyte = bd.getByteArray("MODE_SELECT");
+			switch (modebyte[0]) {
+				case 0x00 :
+					manager.configUpload(configByteArray,modebyte);
+					break;
+				case 0x01 :
+					manager.configUpload(configByteArray,modebyte);
+					break;
+				case 0x02 :
+					manager.configUpload(configByteArray,modebyte);
+					break;
+				case 0x03 :
+					manager.configUpload(configByteArray,modebyte);
+					break;
+				case 0x04 :
+					manager.configUpload(configByteArray,modebyte);
+					break;
+				case 0x05 :
+					manager.configUpload(configByteArray,modebyte);
+					break;
+				case 0x06 :
+					manager.configUpload(configByteArray,modebyte);
+					break;
+				case 0x07 :
+					manager.configUpload(configByteArray,modebyte);
+					break;
+				case (byte) 0x99 :
+					manager.configUpload(configByteArray,modebyte);
+					break;
+
+			}
+			Log.d("Skinny_oym", "OYM : handle message : " + modebyte[0]);
+		}
+	};
+
+
+
+
 }

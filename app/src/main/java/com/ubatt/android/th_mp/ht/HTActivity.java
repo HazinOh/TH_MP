@@ -39,6 +39,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -100,6 +101,7 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 	private TextView tempMaxView;
 	private TextView humiMinView;
 	private TextView humiMaxView;
+	private TextView ACTextViwe;
 
 	private Button menu00Button;
 	private Button menu01Button;
@@ -110,7 +112,13 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 	private Button menu06Button;
 	private Button menu07Button;
 
+	private Button menuButton;
+	private Button resetButton;
+	private Button connectButton;
+
 	private byte[] modeByte;
+
+	private Integer ACvalue;
 
 	private Dialog menuDialog;
 
@@ -124,6 +132,12 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 	private float humi_minmax;
 
 	private boolean pause = false;
+
+
+
+	private long backKeyPressedTime = 0;
+
+	private Toast toast;
 
 	List<Entry> temp_entries = new ArrayList<Entry>();
 	List<Entry> humi_entries = new ArrayList<Entry>();
@@ -284,7 +298,7 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 		chart_humi.invalidate();
 		chart_humi.clear();
 
-		Button resetButton = (Button) findViewById(R.id.action_reset);
+		resetButton = findViewById(R.id.action_reset);
 		resetButton.setOnClickListener(new Button.OnClickListener() {
 			@Override
 			public void onClick(View view) {
@@ -292,13 +306,20 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 			}
 		});
 
-		Button menuButton = (Button) findViewById(R.id.button_menu);
+		menuButton = findViewById(R.id.button_menu);
+		menuButton.setEnabled(false);
+		menuButton.setBackgroundColor(Color.rgb(0xC0, 0xC0, 0xC0));
 		menuButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				openMenuDialog();
 			}
 		});
+
+		resetButton.setOnTouchListener(menuTouched);
+		menuButton.setOnTouchListener(menuTouched);
+		connectButton = findViewById(R.id.action_connect);
+		connectButton.setOnTouchListener(menuTouched);
 	}
 
 	public void openMenuDialog() {
@@ -326,7 +347,106 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 		menu05Button.setOnClickListener(menuClicked);
 		menu06Button.setOnClickListener(menuClicked);
 		menu07Button.setOnClickListener(menuClicked);
+
+		menu00Button.setOnTouchListener(menuTouched);
+		menu01Button.setOnTouchListener(menuTouched);
+		menu02Button.setOnTouchListener(menuTouched);
+		menu03Button.setOnTouchListener(menuTouched);
+		menu04Button.setOnTouchListener(menuTouched);
+		menu05Button.setOnTouchListener(menuTouched);
+		menu06Button.setOnTouchListener(menuTouched);
+		menu07Button.setOnTouchListener(menuTouched);
 	}
+
+	View.OnTouchListener menuTouched = new View.OnTouchListener() {
+		@Override
+		public boolean onTouch(View v, MotionEvent event) {
+			switch ( v.getId() ) {
+				case R.id.button_menu_00:
+					if(event.getAction() == MotionEvent.ACTION_DOWN) {
+						menu00Button.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+					} else if (event.getAction() == MotionEvent.ACTION_UP) {
+						menu00Button.setBackgroundColor(Color.rgb(0x00, 0xA9, 0xCE));
+					}
+					break;
+
+				case R.id.button_menu_01:
+					if(event.getAction() == MotionEvent.ACTION_DOWN) {
+						menu01Button.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+					} else if (event.getAction() == MotionEvent.ACTION_UP) {
+						menu01Button.setBackgroundColor(Color.rgb(0x00, 0xA9, 0xCE));
+					}
+					break;
+
+				case R.id.button_menu_02:
+					if(event.getAction() == MotionEvent.ACTION_DOWN) {
+						menu02Button.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+					} else if (event.getAction() == MotionEvent.ACTION_UP) {
+						menu02Button.setBackgroundColor(Color.rgb(0x00, 0xA9, 0xCE));
+					}
+					break;
+
+				case R.id.button_menu_03:
+					if(event.getAction() == MotionEvent.ACTION_DOWN) {
+						menu03Button.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+					} else if (event.getAction() == MotionEvent.ACTION_UP) {
+						menu03Button.setBackgroundColor(Color.rgb(0x00, 0xA9, 0xCE));
+					}
+					break;
+
+				case R.id.button_menu_04:
+					if(event.getAction() == MotionEvent.ACTION_DOWN) {
+						menu04Button.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+					} else if (event.getAction() == MotionEvent.ACTION_UP) {
+						menu04Button.setBackgroundColor(Color.rgb(0x00, 0xA9, 0xCE));
+					}
+					break;
+				case R.id.button_menu_05:
+					if(event.getAction() == MotionEvent.ACTION_DOWN) {
+						menu05Button.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+					} else if (event.getAction() == MotionEvent.ACTION_UP) {
+						menu05Button.setBackgroundColor(Color.rgb(0x00, 0xA9, 0xCE));
+					}
+					break;
+				case R.id.button_menu_06:
+					if(event.getAction() == MotionEvent.ACTION_DOWN) {
+						menu06Button.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+					} else if (event.getAction() == MotionEvent.ACTION_UP) {
+						menu06Button.setBackgroundColor(Color.rgb(0x00, 0xA9, 0xCE));
+					}
+					break;
+				case R.id.button_menu_07:
+					if(event.getAction() == MotionEvent.ACTION_DOWN) {
+						menu07Button.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+					} else if (event.getAction() == MotionEvent.ACTION_UP) {
+						menu07Button.setBackgroundColor(Color.rgb(0x00, 0xA9, 0xCE));
+					}
+					break;
+				case R.id.button_menu:
+					if(event.getAction() == MotionEvent.ACTION_DOWN) {
+						menuButton.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+					} else if (event.getAction() == MotionEvent.ACTION_UP) {
+						menuButton.setBackgroundColor(Color.rgb(0x00, 0x00, 0x00));
+					}
+					break;
+				case R.id.action_reset:
+					if(event.getAction() == MotionEvent.ACTION_DOWN) {
+						resetButton.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+					} else if (event.getAction() == MotionEvent.ACTION_UP) {
+						resetButton.setBackgroundColor(Color.rgb(0x00, 0x00, 0x00));
+					}
+					break;
+				case R.id.action_connect:
+					if(event.getAction() == MotionEvent.ACTION_DOWN) {
+						connectButton.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+					} else if (event.getAction() == MotionEvent.ACTION_UP) {
+						connectButton.setBackgroundColor(Color.rgb(0x00, 0x00, 0x00));
+					}
+					break;
+			}
+			return false;
+		}
+	};
 
 	View.OnClickListener menuClicked = new View.OnClickListener() {
 		@Override
@@ -370,6 +490,8 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 				case R.id.button_menu_06:
 					modeByte[0] = 0x06;
 					graphReset();
+					connectButton.setEnabled(false);
+					connectButton.setBackgroundColor(Color.rgb(0xC0, 0xC0, 0xC0));
 					LiveBroadcast(modeByte);
 					menuDialog.dismiss();
 					break;
@@ -382,6 +504,10 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 			}
 		}
 	};
+
+
+
+
 
 	public void standbyBroadcast() {
 		final Intent broadcast = new Intent(HTService.BROADCAST_THD_STANDBY_BUTTON);
@@ -604,8 +730,30 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 	}
 
 	@Override
+	public void onBackPressed() {
+		if (System.currentTimeMillis() > backKeyPressedTime + 2500) {
+			backKeyPressedTime = System.currentTimeMillis();
+			toast = Toast.makeText(this, "\'뒤로\' 버튼을 한번 더 누르시면 종료됩니다.", Toast.LENGTH_SHORT);
+			toast.show();
+			return;
+		}
+		if (System.currentTimeMillis() <= backKeyPressedTime + 2000) {
+//			Intent in = new Intent(context_main, HTService.class);
+//			context_main.stopService(in);
+//			modeByte[0] = (byte) 0xff;
+//			final Intent broadcast = new Intent(HTService.BROADCAST_THD_LIVE_BUTTON);
+//			broadcast.putExtra("configByteArray",configByteArray());
+//			broadcast.putExtra("MODE_SELECT",modeByte);
+//			LocalBroadcastManager.getInstance(this).sendBroadcast(broadcast);
+			finish();
+			toast.cancel();
+		}
+	}
+
+	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		Log.d("Skinny_oym", "HTActivity destroy");
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
 	}
 
@@ -621,6 +769,7 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 		tempMinView = findViewById(R.id.text_temp_min);
 		humiMaxView = findViewById(R.id.text_humi_max);
 		humiMinView = findViewById(R.id.text_humi_min);
+		ACTextViwe = findViewById(R.id.AC_count);
 	}
 
 	@Override
@@ -736,8 +885,20 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 	}
 
 	@Override
+	public void onDeviceConnected(@NonNull final BluetoothDevice device) {
+		super.onDeviceConnected(device);
+		menuButton.setEnabled(true);
+		menuButton.setBackgroundColor(Color.rgb(0x00, 0x00, 0x00));
+		//showToast("Bluetooth connected");
+	}
+
+	@Override
 	public void onDeviceDisconnected(@NonNull final BluetoothDevice device) {
 		super.onDeviceDisconnected(device);
+		menuButton.setEnabled(false);
+		menuButton.setBackgroundColor(Color.rgb(0xC0, 0xC0, 0xC0));
+		connectButton.setEnabled(true);
+		connectButton.setBackgroundColor(Color.rgb(0x00, 0x00, 0x00));
 		batteryLevelView.setText(R.string.not_available);
 	}
 
@@ -751,6 +912,7 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 
 				Log.v("skinny_OYM", "Date time : " + datetime);
 				if ( type == 4 ) {
+
 					tempValueView.setText(getString(R.string.hts_value, value));
 
 					db.execSQL("INSERT INTO DEV_DATA (date_time, data_type, sensor_data)" +
@@ -777,6 +939,28 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 						temp_entries.remove(0);
 						dates.remove(0);
 					}
+
+					LineDataSet temp_dataSet = new LineDataSet(temp_entries, ""); // add entries to dataset
+					//dataSet.setFillAlpha(65);
+					temp_dataSet.setFillColor(Color.RED);
+					temp_dataSet.setColor(Color.RED);
+					temp_dataSet.setCircleRadius(2f);
+					temp_dataSet.setCircleColor(Color.RED);
+					temp_dataSet.setCircleHoleColor(Color.RED);
+					temp_dataSet.setLineWidth(1f);
+					temp_dataSet.setCubicIntensity(0.2f);
+					temp_dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+					temp_dataSet.setDrawValues(false);
+
+					LineData temp_lineData = new LineData(temp_dataSet);
+					if ( temp_startIndex == 1 ) {
+						chart_temp.zoom(1.0f,170/70f,0f,0f);
+						chart_temp.centerViewToY(30, YAxis.AxisDependency.LEFT);
+					}
+					chart_temp.setData(temp_lineData);
+					chart_temp.invalidate();
+
+					tempCountView.setText(String.valueOf(temp_entries.size()));
 
 				} else if ( type == 3 ) {
 					humiValueView.setText(getString(R.string.hts_value, value));
@@ -805,32 +989,7 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 						humi_entries.remove(0);
 						dates.remove(0);
 					}
-				}
 
-
-				if ( type == 4 ) {
-					LineDataSet temp_dataSet = new LineDataSet(temp_entries, ""); // add entries to dataset
-					//dataSet.setFillAlpha(65);
-					temp_dataSet.setFillColor(Color.RED);
-					temp_dataSet.setColor(Color.RED);
-					temp_dataSet.setCircleRadius(2f);
-					temp_dataSet.setCircleColor(Color.RED);
-					temp_dataSet.setCircleHoleColor(Color.RED);
-					temp_dataSet.setLineWidth(1f);
-					temp_dataSet.setCubicIntensity(0.2f);
-					temp_dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
-					temp_dataSet.setDrawValues(false);
-
-					LineData temp_lineData = new LineData(temp_dataSet);
-					if ( temp_startIndex == 1 ) {
-						chart_temp.zoom(1.0f,170/70f,0f,0f);
-						chart_temp.centerViewToY(30, YAxis.AxisDependency.LEFT);
-					}
-					chart_temp.setData(temp_lineData);
-					chart_temp.invalidate();
-
-					tempCountView.setText(String.valueOf(temp_entries.size()));
-				} else if ( type == 3) {
 					LineDataSet humi_dataSet = new LineDataSet(humi_entries, ""); // add entries to dataset
 					//dataSet.setFillAlpha(65);
 					humi_dataSet.setFillColor(Color.BLUE);
@@ -852,7 +1011,14 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 					chart_humi.invalidate();
 
 					humiCountView.setText(String.valueOf(humi_entries.size()));
+
+
+				} else if (type == 1 ) {
+					showToast("Download complete.");
+					connectButton.setEnabled(true);
+					connectButton.setBackgroundColor(Color.rgb(0x00, 0x00, 0x00));
 				}
+
 				db.close();
 			}
 		});
@@ -886,6 +1052,11 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 		}
 	}
 
+	public void onOTSRecived(int data) {
+		Log.d("skinny_OYM", " AC Activity data = " + data );
+		ACTextViwe.setText(Integer.toString(data));
+	}
+
 	public void onBatteryLevelChanged(final int value) {
 		batteryLevelView.setText(getString(R.string.battery, value));
 	}
@@ -912,6 +1083,10 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 				String calendar = intent.getStringExtra(HTService.EXTRA_DATETIME);
 				Log.d("skinny_OYM", " Current time = " + calendar);
 				showToast(calendar);
+			} else if (HTService.BROADCAST_THD_OTS_FEATURE.equals(action)) {
+				int ACvalue = intent.getIntExtra("OTS_FEATURE",0);
+				Log.d("skinny_OYM", " OTS Activity AC data = " + ACvalue);
+				onOTSRecived(ACvalue);
 			}
 		}
 	};
@@ -921,6 +1096,7 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 		intentFilter.addAction(HTService.BROADCAST_HTS_MEASUREMENT);
 		intentFilter.addAction(HTService.BROADCAST_BATTERY_LEVEL);
 		intentFilter.addAction(HTService.BROADCAST_THD_DATETIME);
+		intentFilter.addAction(HTService.BROADCAST_THD_OTS_FEATURE);
 		return intentFilter;
 	}
 
@@ -945,7 +1121,8 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 		chart_temp.clear();
 		chart_humi.clear();
 
-
-
 		}
+
+
+
 }

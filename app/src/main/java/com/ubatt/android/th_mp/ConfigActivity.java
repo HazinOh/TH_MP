@@ -2,9 +2,11 @@ package com.ubatt.android.th_mp;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -14,6 +16,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -70,6 +73,8 @@ public class ConfigActivity extends AppCompatActivity {
     private Dialog savePeriodDialog;
     private Dialog limitDialog;
 
+    private Toast toast;
+
     byte[] configByteArray = new byte[34];
 
     int LTH_value = 30 ;
@@ -120,12 +125,25 @@ public class ConfigActivity extends AppCompatActivity {
         limitButton = findViewById(R.id.limit_button);
         setStartButton = findViewById(R.id.setStart_button);
 
+        sensorTypeButton.setBackgroundColor(Color.rgb(0xC0,0xC0,0xC0));
+        startMeasureButton.setBackgroundColor(Color.rgb(0xC0,0xC0,0xC0));
+        keepMeasureButton.setBackgroundColor(Color.rgb(0xC0,0xC0,0xC0));
+        limitButton.setBackgroundColor(Color.rgb(0xC0,0xC0,0xC0));
+
+
         sensorTypeButton.setOnClickListener(ConfigClicked);
         startMeasureButton.setOnClickListener(ConfigClicked);
         keepMeasureButton.setOnClickListener(ConfigClicked);
         savePeriodButton.setOnClickListener(ConfigClicked);
         limitButton.setOnClickListener(ConfigClicked);
         setStartButton.setOnClickListener(ConfigClicked);
+
+        sensorTypeButton.setOnTouchListener(ConfigTouched);
+        startMeasureButton.setOnTouchListener(ConfigTouched);
+        keepMeasureButton.setOnTouchListener(ConfigTouched);
+        savePeriodButton.setOnTouchListener(ConfigTouched);
+        limitButton.setOnTouchListener(ConfigTouched);
+        setStartButton.setOnTouchListener(ConfigTouched);
 
          defaultConfigByteArray();
     }
@@ -197,21 +215,96 @@ public class ConfigActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    View.OnTouchListener ConfigTouched =new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch ( v.getId() ){
+
+                case R.id.sensorType_button:
+//                    if(event.getAction() == MotionEvent.ACTION_DOWN) {
+//                        sensorTypeButton.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+//                    } else if (event.getAction() == MotionEvent.ACTION_UP) {
+//                        sensorTypeButton.setBackgroundColor(Color.rgb(0x00, 0xA9, 0xCE));
+//                    }
+                    break;
+
+                case R.id.startMeasure_button:
+//                    if(event.getAction() == MotionEvent.ACTION_DOWN) {
+//                        startMeasureButton.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+//                    } else if (event.getAction() == MotionEvent.ACTION_UP) {
+//                        startMeasureButton.setBackgroundColor(Color.rgb(0x00, 0xA9, 0xCE));
+//                    }
+                    break;
+
+                case R.id.keepMeasure_button:
+//                    if(event.getAction() == MotionEvent.ACTION_DOWN) {
+//                        keepMeasureButton.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+//                    } else if (event.getAction() == MotionEvent.ACTION_UP) {
+//                        keepMeasureButton.setBackgroundColor(Color.rgb(0x00, 0xA9, 0xCE));
+//                    }
+                    break;
+
+                case R.id.savePeriod_button:
+                    if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                        savePeriodButton.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+                    } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                        savePeriodButton.setBackgroundColor(Color.rgb(0x00, 0xA9, 0xCE));
+                    }
+                    break;
+
+                case R.id.limit_button:
+//                    if(event.getAction() == MotionEvent.ACTION_DOWN) {
+//                        limitButton.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+//                    } else if (event.getAction() == MotionEvent.ACTION_UP) {
+//                        limitButton.setBackgroundColor(Color.rgb(0x00, 0xA9, 0xCE));
+//                    }
+                    break;
+
+                case R.id.setStart_button:
+                    if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                        setStartButton.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+                    } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                        setStartButton.setBackgroundColor(Color.rgb(0x00, 0xA9, 0xCE));
+                    }
+                    break;
+                case R.id.button_ok:
+                    if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                        dialogOk.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+                    } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                        dialogOk.setBackgroundColor(Color.rgb(0x00, 0xA9, 0xCE));
+                    }
+                    break;
+                case R.id.button_cancel:
+                    if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                        dialogCancel.setBackgroundColor(Color.rgb(0x80, 0x80, 0x80));
+                    } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                        dialogCancel.setBackgroundColor(Color.rgb(0x00, 0xA9, 0xCE));
+                    }
+                    break;
+
+            }
+            return false;
+        }
+    };
+
     View.OnClickListener ConfigClicked = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             switch ( v.getId() ){
 
                 case R.id.sensorType_button:
-                    sensorTypeConfig();
+                    //sensorTypeConfig();
+                    showToast("기능 준비중 입니다.");
                     break;
 
                 case R.id.startMeasure_button:
-                    startMeasureConfig();
+                    //startMeasureConfig();
+                    showToast("기능 준비중 입니다.");
                     break;
 
                 case R.id.keepMeasure_button:
-                    keepMeasureConfig();
+                    //keepMeasureConfig();
+                    showToast("기능 준비중 입니다.");
                     break;
 
                 case R.id.savePeriod_button:
@@ -219,7 +312,8 @@ public class ConfigActivity extends AppCompatActivity {
                     break;
 
                 case R.id.limit_button:
-                    limitConfig();
+                    //limitConfig();
+                    showToast("기능 준비중 입니다.");
                     break;
 
                 case R.id.setStart_button:
@@ -264,8 +358,11 @@ public class ConfigActivity extends AppCompatActivity {
         radio_sensor_T = sensorDialog.findViewById(R.id.radio_sensor_T);
         radio_sensor_H = sensorDialog.findViewById(R.id.radio_sensor_H);
 
-        dialogOk = sensorDialog.findViewById(R.id.button_startmeasure_ok);
-        dialogCancel = sensorDialog.findViewById(R.id.button_startmeasure_cancel);
+        dialogOk = sensorDialog.findViewById(R.id.button_ok);
+        dialogCancel = sensorDialog.findViewById(R.id.button_cancel);
+
+        dialogOk.setOnTouchListener(ConfigTouched);
+        dialogCancel.setOnTouchListener(ConfigTouched);
 
         if ( ST == 0x02 ) {
             sensorTypeText.setText("Sensor type : temperature and humidity");
@@ -347,8 +444,11 @@ public class ConfigActivity extends AppCompatActivity {
             }
         });
 
-        dialogOk = startMeasureDialog.findViewById(R.id.button_startmeasure_ok);
-        dialogCancel = startMeasureDialog.findViewById(R.id.button_startmeasure_cancel);
+        dialogOk = startMeasureDialog.findViewById(R.id.button_ok);
+        dialogCancel = startMeasureDialog.findViewById(R.id.button_cancel);
+
+        dialogOk.setOnTouchListener(ConfigTouched);
+        dialogCancel.setOnTouchListener(ConfigTouched);
 
         dialogOk.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -414,8 +514,11 @@ public class ConfigActivity extends AppCompatActivity {
             }
         });
 
-        dialogOk = keepMeasureDialog.findViewById(R.id.button_keepmeasure_ok);
-        dialogCancel = keepMeasureDialog.findViewById(R.id.button_keepmeasure_cancel);
+        dialogOk = keepMeasureDialog.findViewById(R.id.button_ok);
+        dialogCancel = keepMeasureDialog.findViewById(R.id.button_cancel);
+
+        dialogOk.setOnTouchListener(ConfigTouched);
+        dialogCancel.setOnTouchListener(ConfigTouched);
 
         dialogOk.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -492,8 +595,11 @@ public class ConfigActivity extends AppCompatActivity {
             }
         });
 
-        dialogOk = savePeriodDialog.findViewById(R.id.button_saveperiod_ok);
-        dialogCancel = savePeriodDialog.findViewById(R.id.button_saveperiod_cancel);
+        dialogOk = savePeriodDialog.findViewById(R.id.button_ok);
+        dialogCancel = savePeriodDialog.findViewById(R.id.button_cancel);
+
+        dialogOk.setOnTouchListener(ConfigTouched);
+        dialogCancel.setOnTouchListener(ConfigTouched);
 
         dialogOk.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -568,8 +674,11 @@ public class ConfigActivity extends AppCompatActivity {
             }
         });
 
-        dialogOk = limitDialog.findViewById(R.id.button_limit_ok);
-        dialogCancel = limitDialog.findViewById(R.id.button_limit_cancel);
+        dialogOk = limitDialog.findViewById(R.id.button_ok);
+        dialogCancel = limitDialog.findViewById(R.id.button_cancel);
+
+        dialogOk.setOnTouchListener(ConfigTouched);
+        dialogCancel.setOnTouchListener(ConfigTouched);
 
         dialogOk.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -600,6 +709,12 @@ public class ConfigActivity extends AppCompatActivity {
                 limitDialog.dismiss();
             }
         });
+
+    }
+
+    protected void showToast(final String message) {
+        toast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
+        toast.show();
 
     }
 }
