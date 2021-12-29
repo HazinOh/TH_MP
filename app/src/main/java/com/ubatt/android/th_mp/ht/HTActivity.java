@@ -336,8 +336,8 @@ public class HTActivity extends BleProfileServiceReadyActivity<HTService.HTSBind
 		menu06Button = menuDialog.findViewById(R.id.button_menu_06);
 		menu07Button = menuDialog.findViewById(R.id.button_menu_07);
 
-		menu04Button.setVisibility(View.GONE);
-		menu05Button.setVisibility(View.GONE);
+//		menu04Button.setVisibility(View.GONE);
+//		menu05Button.setVisibility(View.GONE);
 
 		menu00Button.setOnClickListener(menuClicked);
 		menu01Button.setOnClickListener(menuClicked);
